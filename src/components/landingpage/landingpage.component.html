@@ -1,1 +1,148 @@
-<p>landingpage works!</p>
+
+<!-- Monochromatic landing page with subtle accent + dark mode toggle -->
+<div class="mt-8 min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100">
+  <!-- Header -->
+
+
+  <!-- Hero -->
+  <section class="section">
+    <div class="grid lg:grid-cols-2 gap-10 items-center">
+      <div>
+        <h1 class="title">
+          Capture ideas.<br />
+          Collaborate.<br />
+          <span class="text-accent">Approve.</span>
+        </h1>
+        <p class="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300">
+          A focused internal board for submitting ideas, commenting, voting, and moving the best ones
+          through review &amp; approval—built for Employees, Managers, and Admins.
+        </p>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          <button class="btn primary" (click)="onGetStarted()">Submit an idea</button>
+          <button class="btn outline" (click)="onExplore()">Browse ideas</button>
+        </div>
+
+        <ul class="mt-6 flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-300">
+          <li class="inline-flex items-center gap-2">
+            <span class="dot green"></span> In‑app notifications
+          </li>
+          <li class="inline-flex items-center gap-2">
+            <span class="dot accent"></span> Role‑based access
+          </li>
+          <li class="inline-flex items-center gap-2">
+            <span class="dot gray"></span> Audit logs
+          </li>
+        </ul>
+      </div>
+
+      <!-- Preview card -->
+      <div class="preview">
+        <div class="preview-header">
+          <div class="font-medium">Ideas</div>
+          <span class="badge accent">Live</span>
+        </div>
+
+        <div class="preview-item">
+          <div class="flex justify-between">
+            <div>
+              <div class="font-medium">Streamline onboarding</div>
+              <div class="text-sm text-slate-500 dark:text-slate-400">Productivity</div>
+            </div>
+            <div class="stat">
+              <span class="font-medium">24</span>
+            </div>
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <span class="badge muted">UnderReview</span>
+            <button class="link" type="button">Comment</button>
+            <button class="link" type="button">Vote</button>
+          </div>
+        </div>
+
+        <div class="preview-item">
+          <div class="flex justify-between">
+            <div>
+              <div class="font-medium">Dark mode for dashboards</div>
+              <div class="text-sm text-slate-500 dark:text-slate-400">UX</div>
+            </div>
+            <div class="stat">
+              <span class="font-medium">12</span>
+            </div>
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <span class="badge muted">Draft</span>
+            <button class="link" type="button">Comment</button>
+            <button class="link" type="button">Vote</button>
+          </div>
+        </div>
+
+        <div class="mt-4 flex justify-between items-center">
+          <button class="btn primary" type="button" (click)="onGetStarted()">Submit an idea</button>
+          <button class="btn outline" type="button">More</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Modules -->
+  <section id="modules" class="section pt-8">
+    <h2 class="subtitle">Core Modules</h2>
+    <div class="mt-6 flex flex-wrap gap-3">
+      <span class="chip">User Management</span>
+      <span class="chip">Idea Submission &amp; Categorization</span>
+      <span class="chip">Collaboration &amp; Voting</span>
+      <span class="chip">Review &amp; Approval</span>
+      <span class="chip">Analytics &amp; Reporting</span>
+      <span class="chip">In‑App Notifications</span>
+    </div>
+  </section>
+
+  <!-- Workflow -->
+  <section id="workflow" class="bg-white border-y border-slate-200 dark:bg-slate-900 dark:border-slate-700">
+    <div class="section">
+      <h2 class="subtitle">Workflow</h2>
+           <div class="mt-6 grid sm:grid-cols-4 gap-4">
+        <div class="step">
+          <span class="step-dot" aria-hidden="true"></span>
+          <div>
+            <div class="font-semibold">Submit</div>
+            <p class="text-sm text-slate-600 dark:text-slate-300">Title, description, category, tags</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-dot" aria-hidden="true"></span>
+          <div>
+            <div class="font-semibold">Collaborate</div>
+            <p class="text-sm text-slate-600 dark:text-slate-300">Comments &amp; votes</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-dot" aria-hidden="true"></span>
+          <div>
+            <div class="font-semibold">Review</div>
+            <p class="text-sm text-slate-600 dark:text-slate-300">Feedback &amp; decision</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-dot" aria-hidden="true"></span>
+          <div>
+            <div class="font-semibold">Approve</div>
+            <p class="text-sm text-slate-600 dark:text-slate-300">Move forward</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-700">
+    <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
+      <div>© 2025 IdeaBoard • Internal</div>
+      <div class="flex gap-4">
+       <a> #faqFAQ</a>
+       <a> #Contact</a>
+        <a>#Privacy</a>
+      </div>
+    </div>
+  </footer>
