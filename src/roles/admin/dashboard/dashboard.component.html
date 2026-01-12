@@ -1,8 +1,4 @@
-<div class="p-8 max-w-7xl mx-auto">
-  <header class="mb-8">
-    <h1 class="text-4xl font-bold text-gray-900 mb-2 m-0">Admin Dashboard</h1>
-    <p class="text-gray-500 text-base m-0">System Overview & Statistics</p>
-  </header>
+<div class="p-8 max-w-7xl mx-auto pt-20">
 
   <!-- Statistics Cards -->
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -65,14 +61,14 @@
     <h2 class="text-2xl font-semibold text-gray-900 m-0 mb-4">Quick Actions</h2>
     <div class="flex gap-4 flex-wrap">
       <a routerLink="/admin/categories" class="px-6 py-3.5 rounded-lg font-medium cursor-pointer transition-all duration-200 border-none no-underline inline-flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-600">
-        📁 Manage Categories
+        Manage Categories
       </a>
-      <button class="px-6 py-3.5 rounded-lg font-medium cursor-pointer transition-all duration-200 border-none bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Coming soon">
-        👥 Manage Users
-      </button>
-      <button class="px-6 py-3.5 rounded-lg font-medium cursor-pointer transition-all duration-200 border-none bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed" disabled title="Coming soon">
-        📊 Generate Report
-      </button>
+      <a routerLink="/admin/manageusers" class="px-6 py-3.5 rounded-lg font-medium cursor-pointer transition-all duration-200 border-none no-underline inline-flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-600">
+        Manage Users
+      </a>
+      <a routerLink="/admin/reports" class="px-6 py-3.5 rounded-lg font-medium cursor-pointer transition-all duration-200 border-none no-underline inline-flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-600">
+        Reports
+      </a>
     </div>
   </div>
 
