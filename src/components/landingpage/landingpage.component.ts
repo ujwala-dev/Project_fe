@@ -1,14 +1,16 @@
 import { TypewriterDirective } from './typewriter.directive';
 
-import { Component, OnInit, ElementRef, NgZone, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FooterComponent } from "../footer/footer.component";
+import { HomeComponent } from "../home/home.component";
 
 
 @Component({
   selector: 'app-landingpage',
   standalone: true,
-  imports: [CommonModule, RouterModule, TypewriterDirective], // <-- NgIf, ng-template, routerLink
+  imports: [CommonModule, RouterModule, FooterComponent, HomeComponent], // <-- NgIf, ng-template, routerLink
   templateUrl: './landingpage.component.html',
   styleUrls: ['./landingpage.component.css'],
 })
