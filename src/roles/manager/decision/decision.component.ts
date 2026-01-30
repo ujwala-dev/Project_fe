@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { IdeaService } from '../../../services/idea.service';
 import { AuthService } from '../../../services/auth.service';
-import { Idea, Review } from '../../../models/model';
+import { Comment, Idea, Review } from '../../../models/model';
 
 @Component({
   selector: 'app-decision',
@@ -21,7 +21,7 @@ export class DecisionComponent implements OnInit {
   reviews: Review[] = [];
   currentUserID = 0;
   currentUserName = '';
-  comments: import('../../../models/model').Comment[] = [];
+  comments:Comment[] = [];
 
   constructor(
     private route: ActivatedRoute,

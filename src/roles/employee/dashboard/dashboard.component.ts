@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IdeaService } from '../../../services/idea.service';
 import { AuthService } from '../../../services/auth.service';
-import { Idea, Comment as IdeaComment, User } from '../../../models/model';
+import { Idea, Comment as IdeaComment, Review, User } from '../../../models/model';
 
 @Component({
   selector: 'app-dashboard',
@@ -19,7 +19,7 @@ export class DashboardComponent implements OnInit {
 
   selected: Idea | null = null;
   comments: IdeaComment[] = [];
-  reviews: import('../../../models/model').Review[] = [];
+  reviews: Review[] = [];
   newComment = '';
   currentUser: User | null = null;
 

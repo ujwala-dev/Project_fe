@@ -14,7 +14,7 @@ export const adminRoutes: Routes = [
       { path: 'categories', component: CategoryListComponent },
       { path: 'manageusers', component: ManageusersComponent },
       { path: 'reports', component: ReportsComponent },
-      { path: 'admin', redirectTo: 'dasboard', pathMatch: 'full' },
+      { path: 'admin', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },
 ];
