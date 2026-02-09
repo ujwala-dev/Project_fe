@@ -11,6 +11,7 @@ import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-signin',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './signin.component.html',
   styleUrl: './signin.component.css',
@@ -24,7 +25,7 @@ export class SigninComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
   ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -45,53 +46,32 @@ export class SigninComponent {
 
     this.loading = true;
 
-    setTimeout(() => {
-      const data = this.form.value;
+    const data = this.form.value;
 
-      let storedUser: string | null = null;
-      try {
-        if (
-          typeof window !== 'undefined' &&
-          window.localStorage &&
-          typeof window.localStorage.getItem === 'function'
-        ) {
-          storedUser = window.localStorage.getItem('user');
-        }
-      } catch {
-        storedUser = null;
-      }
-
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-
-        if (user.email === data.email && user.password === data.password) {
-          if (!user.userID) {
-            user.userID = Date.now();
-          }
-
-          // Use centralized AuthService
-          this.authService.login(user);
-
-          this.loading = false;
-
-          const role = String(user.role).toLowerCase();
-
-          if (role === 'admin') {
-            this.router.navigate(['/admin/dashboard']);
-          } else if (role === 'manager') {
-            this.router.navigate(['/manager/dashboard']);
-          } else {
-            this.router.navigate(['/employee/dashboard']);
-          }
-        } else {
-          this.loading = false;
-          alert('Invalid credentials');
-        }
-      } else {
+    this.authService.loginWithCredentials(data.email, data.password).subscribe({
+      next: (user) => {
         this.loading = false;
-        alert('User not found. Please sign up first.');
-      }
-    }, 1500);
+
+        const role = String(user.role).toLowerCase();
+
+        if (role === 'admin') {
+          this.router.navigate(['/admin/dashboard']);
+        } else if (role === 'manager') {
+          this.router.navigate(['/manager/dashboard']);
+        } else {
+          this.router.navigate(['/employee/dashboard']);
+        }
+      },
+      error: (error) => {
+        this.loading = false;
+        const errorMessage =
+          error.error?.message ||
+          error.error ||
+          'Invalid credentials. Please try again.';
+        alert(errorMessage);
+        console.error('Login error:', error);
+      },
+    });
   }
 
   getControl(fieldName: string) {

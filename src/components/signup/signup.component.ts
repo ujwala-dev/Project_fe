@@ -9,10 +9,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { UserRole } from '../../models/model';
 
 @Component({
   selector: 'app-signup',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.css',
@@ -27,7 +27,7 @@ export class SignupComponent {
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private AuthService: AuthService,
+    private authService: AuthService,
   ) {
     this.form = this.fb.group(
       {
@@ -58,7 +58,6 @@ export class SignupComponent {
   toggleConfirmPassword() {
     this.showConfirmPass = !this.showConfirmPass;
   }
-
   submit() {
     this.submitted = true;
     if (this.form.invalid) {
@@ -67,33 +66,29 @@ export class SignupComponent {
 
     this.loading = true;
 
-    setTimeout(() => {
-      const data = this.form.value;
-      const roleStr = String(data.role || '').toLowerCase();
-      const role = (Object.values(UserRole) as string[]).includes(roleStr)
-        ? (roleStr as UserRole)
-        : UserRole.EMPLOYEE;
+    const data = this.form.value;
 
-      const user: any = {
-        name: data.name,
-        email: data.email,
-        role,
-        password: data.password,
-      };
+    const registerPayload = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      role: data.role,
+    };
 
-      user.userID = Date.now();
-
-      try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          window.localStorage.setItem('user', JSON.stringify(user));
-        }
-      } catch {}
-
-      this.loading = false;
-
-      // Redirect to signin
-      this.router.navigate(['/signin']);
-    }, 1500);
+    this.authService.register(registerPayload).subscribe({
+      next: (response) => {
+        this.loading = false;
+        alert(response || 'Registration successful. Please login to continue.');
+        this.router.navigate(['/signin']);
+      },
+      error: (error) => {
+        this.loading = false;
+        const errorMessage =
+          error.error || 'Registration failed. Please try again.';
+        alert(errorMessage);
+        console.error('Registration error:', error);
+      },
+    });
   }
 
   getControl(fieldName: string) {

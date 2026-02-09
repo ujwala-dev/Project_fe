@@ -1,16 +1,17 @@
 import { Component } from '@angular/core';
-import { TypewriterDirective } from "../landingpage/typewriter.directive";
+import { TypewriterDirective } from '../landingpage/typewriter.directive';
 import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
+  standalone: true,
   imports: [TypewriterDirective],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.css'
+  styleUrl: './home.component.css',
 })
 export class HomeComponent {
-  constructor(private Router: Router) { }
-navigateTo(route: string): void {
+  constructor(private Router: Router) {}
+  navigateTo(route: string): void {
     this.Router.navigate([route]);
   }
 }
