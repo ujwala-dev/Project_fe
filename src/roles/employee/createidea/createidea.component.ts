@@ -11,6 +11,7 @@ import { IdeaService } from '../../../services/idea.service';
 import { AuthService } from '../../../services/auth.service';
 import { UserRole, Category } from '../../../models/model';
 import { CategoryService } from '../../../services/category.service';
+import { NotificationService } from '../../../services/notification.service';
 
 @Component({
   selector: 'app-createidea',
@@ -31,6 +32,7 @@ export class CreateideaComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private categoryService: CategoryService,
+    private notificationService: NotificationService,
   ) {
     this.form = this.fb.group({
       title: [
@@ -99,6 +101,10 @@ export class CreateideaComponent implements OnInit {
     this.ideaService.createIdea(payload).subscribe({
       next: (response) => {
         console.log('Idea created successfully:', response);
+        // Trigger immediate notification refresh for managers
+        setTimeout(() => {
+          this.notificationService.refresh();
+        }, 1000); // Small delay to ensure backend has created notifications
         this.router.navigate(['employee/dashboard']);
       },
       error: (error) => {

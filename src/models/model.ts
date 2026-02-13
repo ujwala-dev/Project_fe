@@ -54,14 +54,30 @@ export interface Vote {
 }
 
 export interface Notification {
-  notificationID: number;
-  userID: number;
+  notificationID: string; // Backend uses Guid
+  userID: string; // Backend uses Guid
   type: 'NewIdea' | 'ReviewDecision' | 'NewComment';
   message: string;
   status: 'Unread' | 'Read';
   createdDate: string;
-  relatedIdeaID?: number;
-  relatedUserName?: string;
+  relatedIdeaID?: string; // ideaId from backend (Guid)
+  relatedUserName?: string; // reviewerName from backend
+  ideaTitle?: string; // From backend DTO
+  reviewerId?: string; // From backend DTO (Guid)
+  reviewerName?: string; // From backend DTO
+}
+
+export interface NotificationResponse {
+  notificationId: string;
+  userId: string;
+  type: string;
+  message: string;
+  status: string;
+  createdDate: string;
+  ideaId?: string;
+  ideaTitle?: string;
+  reviewerId?: string;
+  reviewerName?: string;
 }
 
 export interface Category {
