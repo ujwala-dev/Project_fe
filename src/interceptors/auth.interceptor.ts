@@ -6,7 +6,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     req.url.includes('/Auth/login') || req.url.includes('/Auth/register');
 
   if (isAuthEndpoint) {
-    console.log('Auth Interceptor - Skipping for auth endpoint:', req.url);
     return next(req);
   }
 
@@ -21,7 +20,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           ? 'Token exists (length: ' + token.length + ')'
           : 'No token found',
       );
-      console.log('Auth Interceptor - Request URL:', req.url);
 
       // Check token format and expiration
       if (token) {
@@ -88,8 +86,5 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(clonedRequest);
   }
 
-  console.log(
-    'Auth Interceptor - No token, request sent without Authorization header',
-  );
   return next(req);
 };

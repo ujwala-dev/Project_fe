@@ -44,6 +44,7 @@ export interface Comment {
   text: string;
   createdDate: string;
   userName?: string;
+  isDownvoteComment?: boolean; // Flag to indicate this is a downvote comment
 }
 
 export interface Vote {

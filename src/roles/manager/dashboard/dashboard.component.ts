@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { IdeaService } from '../../../services/idea.service';
+import { ReviewService } from '../../../services/review.service';
 import { Idea } from '../../../models/model';
 
 @Component({
@@ -15,7 +16,7 @@ export class DashboardComponent implements OnInit {
   ideas: Idea[] = [];
   isLoading = false;
 
-  constructor(private ideaService: IdeaService) {}
+  constructor(private ideaService: IdeaService, private reviewService: ReviewService) {}
 
   ngOnInit(): void {
     this.loadIdeas();
@@ -24,7 +25,7 @@ export class DashboardComponent implements OnInit {
   loadIdeas() {
     this.isLoading = true;
     // Use manager-specific endpoint to get ideas with full details
-    this.ideaService.getIdeasForReview().subscribe({
+    this.reviewService.getIdeasForReview().subscribe({
       next: (list) => {
         this.ideas = list;
         this.isLoading = false;

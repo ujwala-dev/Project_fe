@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { IdeaService } from '../../../services/idea.service';
+import { ReviewService } from '../../../services/review.service';
 import { AuthService } from '../../../services/auth.service';
 import { Comment, Idea, Review } from '../../../models/model';
 
@@ -24,7 +25,12 @@ export class DecisionComponent implements OnInit {
   comments: Comment[] = [];
   filterStatus: 'All' | 'Draft' | 'UnderReview' | 'Approved' = 'All';
   isLoading = false;
-statusOptions: any;
+  statusOptions: ('All' | 'Draft' | 'UnderReview' | 'Approved')[] = [
+    'All',
+    'Draft',
+    'UnderReview',
+    'Approved',
+  ];
 
   get filteredIdeas(): Idea[] {
     if (this.filterStatus === 'All') {
@@ -36,6 +42,7 @@ statusOptions: any;
   constructor(
     private route: ActivatedRoute,
     private ideaService: IdeaService,
+    private reviewService: ReviewService,
     private authService: AuthService,
   ) {}
 
@@ -62,7 +69,7 @@ statusOptions: any;
 
   loadIdeasForReview() {
     this.isLoading = true;
-    this.ideaService.getIdeasForReview().subscribe({
+    this.reviewService.getIdeasForReview().subscribe({
       next: (list) => {
         this.ideas = list;
         this.isLoading = false;
@@ -82,11 +89,11 @@ statusOptions: any;
     this.selected = idea;
     if (idea) {
       // Load reviews from backend
-      this.ideaService.getReviewsForIdea(idea.ideaID).subscribe({
-        next: (reviews) => {
+      this.reviewService.getReviewsForIdea(idea.ideaID).subscribe({
+        next: (reviews: Review[]) => {
           this.reviews = reviews;
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error loading reviews:', error);
           this.reviews = [];
         },
@@ -94,10 +101,10 @@ statusOptions: any;
 
       // Load comments from backend
       this.ideaService.getCommentsForIdea(idea.ideaID).subscribe({
-        next: (comments) => {
+        next: (comments: Comment[]) => {
           this.comments = comments;
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error loading comments:', error);
           this.comments = [];
         },
@@ -111,24 +118,26 @@ statusOptions: any;
       return;
     }
 
-    this.ideaService
+    this.reviewService
       .submitReview(this.selected.ideaID, this.feedback.trim(), this.decision)
       .subscribe({
-        next: (response) => {
+        next: (response: any) => {
           console.log('Review submitted successfully:', response);
           alert('Review submitted successfully!');
           this.feedback = '';
 
           // Reload reviews
           if (this.selected) {
-            this.ideaService.getReviewsForIdea(this.selected.ideaID).subscribe({
-              next: (reviews) => {
-                this.reviews = reviews;
-              },
-            });
+            this.reviewService
+              .getReviewsForIdea(this.selected.ideaID)
+              .subscribe({
+                next: (reviews: Review[]) => {
+                  this.reviews = reviews;
+                },
+              });
           }
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error submitting review:', error);
           const errorMsg =
             error.error?.message ||
@@ -148,20 +157,22 @@ statusOptions: any;
       return;
     }
 
-    this.ideaService.changeIdeaStatus(this.selected.ideaID, status).subscribe({
-      next: () => {
-        console.log('Status changed successfully');
-        alert(`Status changed to ${status} successfully!`);
-        if (this.selected) {
-          this.selected.status = status;
-        }
-        // Reload ideas to reflect changes
-        this.loadIdeasForReview();
-      },
-      error: (error) => {
-        console.error('Error changing status:', error);
-        alert('Failed to change status. Please try again.');
-      },
-    });
+    this.reviewService
+      .changeIdeaStatus(this.selected.ideaID, status)
+      .subscribe({
+        next: () => {
+          console.log('Status changed successfully');
+          alert(`Status changed to ${status} successfully!`);
+          if (this.selected) {
+            this.selected.status = status;
+          }
+          // Reload ideas to reflect changes
+          this.loadIdeasForReview();
+        },
+        error: (error) => {
+          console.error('Error changing status:', error);
+          alert('Failed to change status. Please try again.');
+        },
+      });
   }
 }

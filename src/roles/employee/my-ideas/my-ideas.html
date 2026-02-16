@@ -145,46 +145,104 @@
         >
           <div class="flex items-center gap-4">
             <button
-              (click)="upvote(idea)"
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-green-100 text-gray-600 hover:text-green-600 transition-colors"
-              title="Upvote"
+              (click)="showUpvoters()"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-green-100 text-gray-600 hover:text-green-600 transition-colors cursor-pointer"
+              title="View upvoters"
+              *ngIf="getVotersForIdea(idea.ideaID).upvoters.length > 0"
             >
               <div class="flex items-center">
                 <img src="Like.svg" alt="Like Icon" class="w-4 h-4" />
               </div>
               <span class="font-bold">{{ idea.upvotes || 0 }}</span>
             </button>
+
             <button
-              (click)="downvote(idea)"
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-red-100 text-gray-600 hover:text-red-600 transition-colors"
-              title="Downvote"
+              *ngIf="getVotersForIdea(idea.ideaID).upvoters.length === 0"
+              disabled
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed"
+            >
+              <div class="flex items-center">
+                <img
+                  src="Like.svg"
+                  alt="Like Icon"
+                  class="w-4 h-4 opacity-50"
+                />
+              </div>
+              <span class="font-bold">{{ idea.upvotes || 0 }}</span>
+            </button>
+
+            <button
+              (click)="showDownvoters()"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 transition-colors cursor-pointer"
+              title="View downvoters"
+              *ngIf="getVotersForIdea(idea.ideaID).downvoters.length > 0"
             >
               <div class="flex items-center">
                 <img src="disLike.svg" alt="disLike Icon" class="w-4 h-4" />
               </div>
               <span class="font-bold">{{ idea.downvotes || 0 }}</span>
             </button>
+
+            <button
+              *ngIf="getVotersForIdea(idea.ideaID).downvoters.length === 0"
+              disabled
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-400 cursor-not-allowed"
+            >
+              <div class="flex items-center">
+                <img
+                  src="disLike.svg"
+                  alt="disLike Icon"
+                  class="w-4 h-4 opacity-50"
+                />
+              </div>
+              <span class="font-bold">{{ idea.downvotes || 0 }}</span>
+            </button>
           </div>
 
-          <button
-            class="text-sm font-medium text-(--blue-400) hover:text-(--blue-500)hover:underline flex items-center gap-1"
-            (click)="selectIdea(idea)"
-          >
-            View Details & Discussion
-            <svg
-              class="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div class="flex items-center gap-2">
+            <!-- Delete button - only for Draft or UnderReview -->
+            <button
+              *ngIf="idea.status === 'Draft' || idea.status === 'UnderReview'"
+              (click)="deleteIdea(idea)"
+              class="text-sm font-medium text-red-500 hover:text-red-700 hover:underline flex items-center gap-1"
+              title="Delete idea"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              ></path>
-            </svg>
-          </button>
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                ></path>
+              </svg>
+              Delete
+            </button>
+
+            <button
+              class="text-sm font-medium text-(--blue-400) hover:text-(--blue-500) hover:underline flex items-center gap-1"
+              (click)="selectIdea(idea)"
+            >
+              View Details & Discussion
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                ></path>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div
@@ -224,22 +282,43 @@
             <div class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2">
               <div *ngFor="let c of comments" class="flex gap-3 text-sm">
                 <div
-                  class="w-8 h-8 rounded-full bg-(--blue-200) flex items-center justify-center text-(--blue-500) font-bold shrink-0"
+                  [ngClass]="{
+                    'bg-(--blue-200) text-(--blue-500)': !c.isDownvoteComment,
+                    'bg-red-200 text-red-600': c.isDownvoteComment
+                  }"
+                  class="w-8 h-8 rounded-full flex items-center justify-center font-bold shrink-0"
                 >
                   {{ (c.userName || 'U').charAt(0) }}
                 </div>
                 <div
-                  class="bg-white p-3 rounded-tr-lg rounded-br-lg rounded-bl-lg border border-gray-100 shadow-sm grow"
+                  [ngClass]="{
+                    'bg-white border-gray-100': !c.isDownvoteComment,
+                    'bg-red-50 border-red-200': c.isDownvoteComment
+                  }"
+                  class="p-3 rounded-tr-lg rounded-br-lg rounded-bl-lg border shadow-sm grow"
                 >
                   <div class="flex justify-between items-baseline mb-1">
                     <span class="font-semibold text-gray-800"
                       >{{ c.userName }}</span
                     >
-                    <span class="text-xs text-gray-400"
-                      >{{ c.createdDate | date:'short' }}</span
+                    <span
+                      [ngClass]="{'text-red-500': c.isDownvoteComment, 'text-gray-400': !c.isDownvoteComment}"
+                      class="text-xs"
                     >
+                      {{ c.createdDate | date:'short' }}
+                      <span
+                        *ngIf="c.isDownvoteComment"
+                        class="ml-1 font-semibold"
+                      >
+                        (Downvote reason)
+                      </span>
+                    </span>
                   </div>
-                  <p class="text-gray-600">{{ c.text }}</p>
+                  <p
+                    [ngClass]="{'text-red-700': c.isDownvoteComment, 'text-gray-600': !c.isDownvoteComment}"
+                  >
+                    {{ c.text }}
+                  </p>
                 </div>
               </div>
               <div
@@ -249,27 +328,119 @@
                 No comments yet.
               </div>
             </div>
-
-            <!-- Add Comment -->
-            <div class="flex gap-2">
-              <input
-                type="text"
-                [(ngModel)]="newComment"
-                placeholder="Add a comment..."
-                class="grow px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:border-(--blue-300) text-sm"
-                (keyup.enter)="addComment()"
-              />
-              <button
-                (click)="addComment()"
-                [disabled]="!newComment.trim()"
-                class="bg-(--blue-500) text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-(--blue-400) disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Post
-              </button>
-            </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Voters Modal -->
+<div
+  *ngIf="showVotersModal"
+  class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+  (click)="closeVotersModal()"
+>
+  <div
+    class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-96 flex flex-col"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Header -->
+    <div
+      class="px-6 py-4 border-b border-gray-200 flex items-center justify-between"
+    >
+      <h3 class="text-lg font-semibold text-gray-900">
+        {{ votersModalTitle }}
+      </h3>
+      <button
+        (click)="closeVotersModal()"
+        class="text-gray-500 hover:text-gray-700 transition-colors"
+      >
+        <svg
+          class="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          ></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Voters List -->
+    <div class="flex-1 overflow-y-auto p-6">
+      <div
+        *ngIf="votersModalTitle === 'Upvoted by'; then upvotersContent else downvotersContent"
+      ></div>
+
+      <ng-template #upvotersContent>
+        <div
+          *ngIf="currentUpvoters.length > 0; else noUpvoters"
+          class="space-y-3"
+        >
+          <div
+            *ngFor="let voter of currentUpvoters"
+            class="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-100"
+          >
+            <div
+              class="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center text-green-600 font-bold shrink-0"
+            >
+              {{ (voter.userName || 'U').charAt(0).toUpperCase() }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-gray-900 truncate">
+                {{ voter.userName || 'User' }}
+              </p>
+              <p class="text-xs text-gray-500">Upvoted</p>
+            </div>
+          </div>
+        </div>
+        <ng-template #noUpvoters>
+          <p class="text-gray-500 text-center py-8">No upvotes yet</p>
+        </ng-template>
+      </ng-template>
+
+      <ng-template #downvotersContent>
+        <div
+          *ngIf="currentDownvoters.length > 0; else noDownvoters"
+          class="space-y-3"
+        >
+          <div
+            *ngFor="let voter of currentDownvoters"
+            class="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-100"
+          >
+            <div
+              class="w-10 h-10 rounded-full bg-red-200 flex items-center justify-center text-red-600 font-bold shrink-0"
+            >
+              {{ (voter.userName || 'U').charAt(0).toUpperCase() }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-gray-900 truncate">
+                {{ voter.userName || 'User' }}
+              </p>
+              <p class="text-xs text-gray-500">Downvoted</p>
+            </div>
+          </div>
+        </div>
+        <ng-template #noDownvoters>
+          <p class="text-gray-500 text-center py-8">No downvotes yet</p>
+        </ng-template>
+      </ng-template>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-3 border-t border-gray-200 flex justify-end gap-2">
+      <button
+        (click)="closeVotersModal()"
+        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+      >
+        Close
+      </button>
     </div>
   </div>
 </div>

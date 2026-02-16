@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IdeaService } from '../../../services/idea.service';
 import { AuthService } from '../../../services/auth.service';
+import { VoteService } from '../../../services/vote.service';
+import { ReviewService } from '../../../services/review.service';
 import {
   Idea,
   Comment as IdeaComment,
@@ -38,10 +40,14 @@ export class DashboardComponent implements OnInit {
   constructor(
     private ideaService: IdeaService,
     private authService: AuthService,
+    private voteService: VoteService,
+    private reviewService: ReviewService,
   ) {}
 
   ngOnInit(): void {
     this.loadCurrentUser();
+    // Set IdeaService reference in VoteService for auto-reload after voting
+    this.voteService.setIdeaService(this.ideaService);
     // Load fresh ideas from backend for the current user session
     this.ideaService.loadIdeas();
     // Subscribe to get updates whenever ideas change
@@ -67,11 +73,11 @@ export class DashboardComponent implements OnInit {
         this.comments = [];
       },
     });
-    this.ideaService.getReviewsForIdea(idea.ideaID).subscribe({
-      next: (reviews) => {
+    this.reviewService.getReviewsForIdea(idea.ideaID).subscribe({
+      next: (reviews: Review[]) => {
         this.reviews = reviews;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading reviews:', error);
         this.reviews = [];
       },
@@ -108,12 +114,12 @@ export class DashboardComponent implements OnInit {
   upvote(idea: Idea) {
     if (!this.currentUser) return;
 
-    this.ideaService.upvoteIdea(idea.ideaID).subscribe({
-      next: (response) => {
+    this.voteService.upvoteIdea(idea.ideaID).subscribe({
+      next: (response: any) => {
         console.log('Upvoted successfully');
         // Ideas will be automatically reloaded by the service
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error upvoting:', error);
         const errorMsg =
           error.error?.message || error.error || 'Failed to upvote';
@@ -142,12 +148,12 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    this.ideaService.downvoteIdea(idea.ideaID, comment.trim()).subscribe({
-      next: (response) => {
+    this.voteService.downvoteIdea(idea.ideaID, comment.trim()).subscribe({
+      next: (response: any) => {
         console.log('Downvoted successfully with comment');
         // Ideas will be automatically reloaded by the service
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error downvoting:', error);
         const errorMsg =
           error.error?.message || error.error || 'Failed to downvote';
