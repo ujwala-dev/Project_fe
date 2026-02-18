@@ -76,10 +76,20 @@ export class SignupComponent {
     };
 
     this.authService.register(registerPayload).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.loading = false;
-        alert(response || 'Registration successful. Please login to continue.');
-        this.router.navigate(['/signin']);
+
+        // Handle new response structure
+        if (response.success) {
+          const message =
+            response.message ||
+            'Registration successful. Please check your email for next steps.';
+          alert(message);
+          this.router.navigate(['/signin']);
+        } else {
+          // Handle unsuccessful registration
+          alert(response.message || 'Registration failed. Please try again.');
+        }
       },
       error: (error) => {
         this.loading = false;
@@ -95,12 +105,8 @@ export class SignupComponent {
             '2. SSL certificate is trusted\n' +
             '3. CORS is configured on backend\n' +
             '4. Network connection is active';
-        } else if (error.status === 400) {
-          errorMessage =
-            error.error || 'Invalid input. Please check your details.';
-        } else if (error.status === 409) {
-          errorMessage =
-            'Email already exists. Please use a different email or sign in.';
+        } else if (error.error?.message) {
+          errorMessage = error.error.message;
         } else if (typeof error.error === 'string') {
           errorMessage = error.error;
         }

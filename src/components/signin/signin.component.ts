@@ -49,9 +49,11 @@ export class SigninComponent {
     const data = this.form.value;
 
     this.authService.loginWithCredentials(data.email, data.password).subscribe({
-      next: (user) => {
+      next: (user: any) => {
         this.loading = false;
+        console.log('Login successful, user:', user);
 
+        // User object is returned directly from auth service
         const role = String(user.role).toLowerCase();
 
         if (role === 'admin') {
@@ -64,7 +66,10 @@ export class SigninComponent {
       },
       error: (error) => {
         this.loading = false;
-        console.error('Login error:', error);
+        console.error('Full login error object:', error);
+        console.error('Error status:', error.status);
+        console.error('Error error:', error.error);
+        console.error('Error message:', error.message);
 
         let errorMessage = 'Login failed. Please try again.';
 
@@ -76,19 +81,18 @@ export class SigninComponent {
             '2. SSL certificate is trusted\n' +
             '3. CORS is configured on backend\n' +
             '4. Network connection is active';
-        } else if (error.status === 401) {
-          errorMessage = 'Invalid email or password. Please try again.';
-        } else if (error.status === 400) {
+        } else if (error.error?.success === false) {
           errorMessage =
-            error.error?.message ||
-            error.error ||
-            'Invalid request. Please check your input.';
+            error.error?.message || 'Login failed. Please try again.';
         } else if (error.error?.message) {
           errorMessage = error.error.message;
         } else if (typeof error.error === 'string') {
           errorMessage = error.error;
+        } else if (error.message) {
+          errorMessage = error.message;
         }
 
+        console.error('Final error message:', errorMessage);
         alert(errorMessage);
       },
     });
