@@ -16,160 +16,64 @@ Chart.register(...registerables);
   standalone: true,
 })
 export class ReportsComponent implements OnInit, AfterViewInit {
-
-  departmentReports: {
-    department: string;
-    ideasSubmitted: number;
-    approvedIdeas: number;
-    participationCount: number;
-  }[] = [];
-
   categoryReports: {
     category: string;
     ideasSubmitted: number;
     approvedIdeas: number;
   }[] = [];
 
-
   totalIdeas = 0;
   totalApproved = 0;
   totalUsers = 0;
   approvalRate = 0;
 
-  departmentChart: Chart | null = null;
   categoryChart: Chart | null = null;
-  approvalRateChart: Chart | null = null;
   ideaStatusChart: Chart | null = null;
 
   constructor(
     private ideaService: IdeaService,
     private userService: UserService,
-    private categoryService: CategoryService
-  ) { }
+    private categoryService: CategoryService,
+  ) {}
 
   ngOnInit(): void {
     this.generateReports();
   }
 
-  ngAfterViewInit(): void {
-
-  }
+  ngAfterViewInit(): void {}
 
   generateReports(): void {
-
     this.ideaService.getAllIdeas().subscribe((ideas) => {
       this.totalIdeas = ideas.length;
       this.totalApproved = ideas.filter((i) => i.status === 'Approved').length;
-      this.approvalRate = this.totalIdeas > 0
-        ? Math.round((this.totalApproved / this.totalIdeas) * 100)
-        : 0;
-
+      this.approvalRate =
+        this.totalIdeas > 0
+          ? Math.round((this.totalApproved / this.totalIdeas) * 100)
+          : 0;
 
       this.initializeIdeaStatusChart(ideas);
 
-      this.userService.getAllUsers().subscribe((users) => {
-        this.totalUsers = users.length;
-        const departments = [...new Set(users.map((u) => u.department).filter((d) => d))];
-
-        this.departmentReports = departments.map((dept) => {
-          const deptUsers = users.filter((u) => u.department === dept);
-          const deptUserIds = deptUsers.map((u) => u.userID);
-          const deptIdeas = ideas.filter((i) => deptUserIds.includes(i.userID));
-          const deptApproved = deptIdeas.filter((i) => i.status === 'Approved');
-
-          return {
-            department: dept!,
-            ideasSubmitted: deptIdeas.length,
-            approvedIdeas: deptApproved.length,
-            participationCount: deptUsers.filter((u) =>
-              ideas.some((idea) => idea.userID === u.userID)
-            ).length,
-          };
-        }).sort((a, b) => b.ideasSubmitted - a.ideasSubmitted);
-
-
-        setTimeout(() => {
-          this.initializeDepartmentChart();
-          this.initializeApprovalRateChart();
-        }, 100);
-      });
-
-
       this.categoryService.getAllCategories().subscribe((categories) => {
-        this.categoryReports = categories.map((cat) => {
-          const catIdeas = ideas.filter((i) => i.categoryID === cat.categoryID);
-          const catApproved = catIdeas.filter((i) => i.status === 'Approved');
+        this.categoryReports = categories
+          .map((cat) => {
+            const catIdeas = ideas.filter(
+              (i) => i.categoryID === cat.categoryID,
+            );
+            const catApproved = catIdeas.filter((i) => i.status === 'Approved');
 
-          return {
-            category: cat.name,
-            ideasSubmitted: catIdeas.length,
-            approvedIdeas: catApproved.length,
-          };
-        }).filter(r => r.ideasSubmitted > 0)
+            return {
+              category: cat.name,
+              ideasSubmitted: catIdeas.length,
+              approvedIdeas: catApproved.length,
+            };
+          })
+          .filter((r) => r.ideasSubmitted > 0)
           .sort((a, b) => b.ideasSubmitted - a.ideasSubmitted);
-
 
         setTimeout(() => {
           this.initializeCategoryChart();
         }, 100);
       });
-    });
-  }
-
-  initializeDepartmentChart(): void {
-    const ctx = document.getElementById('departmentChart') as HTMLCanvasElement;
-    if (!ctx) return;
-
-    if (this.departmentChart) {
-      this.departmentChart.destroy();
-    }
-
-    this.departmentChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: this.departmentReports.map(r => r.department),
-        datasets: [
-          {
-            label: 'Ideas Submitted',
-            data: this.departmentReports.map(r => r.ideasSubmitted),
-            backgroundColor: '#3b82f6',
-            borderRadius: 6,
-          },
-          {
-            label: 'Approved Ideas',
-            data: this.departmentReports.map(r => r.approvedIdeas),
-            backgroundColor: '#10b981',
-            borderRadius: 6,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: {
-            position: 'top',
-            labels: {
-              font: { size: 12, weight: 'bold' },
-              usePointStyle: true,
-              padding: 20,
-            },
-          },
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              font: { size: 11 },
-            },
-          },
-          x: {
-            ticks: {
-              font: { size: 11 },
-            },
-          },
-        },
-      },
     });
   }
 
@@ -184,10 +88,10 @@ export class ReportsComponent implements OnInit, AfterViewInit {
     this.categoryChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: this.categoryReports.map(r => r.category),
+        labels: this.categoryReports.map((r) => r.category),
         datasets: [
           {
-            data: this.categoryReports.map(r => r.ideasSubmitted),
+            data: this.categoryReports.map((r) => r.ideasSubmitted),
             backgroundColor: [
               '#3b82f6',
               '#10b981',
@@ -213,62 +117,6 @@ export class ReportsComponent implements OnInit, AfterViewInit {
               font: { size: 12, weight: 500 },
               usePointStyle: true,
               padding: 20,
-            },
-          },
-        },
-      },
-    });
-  }
-
-  initializeApprovalRateChart(): void {
-    const ctx = document.getElementById('approvalRateChart') as HTMLCanvasElement;
-    if (!ctx) return;
-
-    if (this.approvalRateChart) {
-      this.approvalRateChart.destroy();
-    }
-
-    this.approvalRateChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: this.departmentReports.map(r => r.department),
-        datasets: [
-          {
-            label: 'Approval Rate (%)',
-            data: this.departmentReports.map(r =>
-              r.ideasSubmitted > 0
-                ? Math.round((r.approvedIdeas / r.ideasSubmitted) * 100)
-                : 0
-            ),
-            backgroundColor: '#8b5cf6',
-            borderRadius: 6,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 100,
-            ticks: {
-              font: { size: 11 },
-              callback: function (value) {
-                return value + '%';
-              },
-            },
-          },
-          x: {
-            ticks: {
-              font: { size: 11 },
-            },
-          },
-        },
-        plugins: {
-          legend: {
-            labels: {
-              font: { size: 12, weight: 'bold' },
             },
           },
         },

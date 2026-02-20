@@ -16,11 +16,13 @@ export class ReviewService {
     ideaID: number | string,
     feedback: string,
     decision: 'Approve' | 'Reject',
+    rejectionReason?: string,
   ): Observable<any> {
     const payload = {
       ideaId: ideaID,
       feedback: feedback,
       decision: decision,
+      rejectionReason: rejectionReason,
     };
     return this.http.post(`${this.reviewApiUrl}/submit`, payload).pipe(
       tap((response) => {
@@ -107,6 +109,8 @@ export class ReviewService {
           category: idea.categoryName || idea.category || '',
           upvotes: idea.upvotes || 0,
           downvotes: idea.downvotes || 0,
+          reviewedByID: idea.reviewedByID || idea.reviewedById,
+          reviewedByName: idea.reviewedByName || idea.reviewedByUserName,
         })),
       ),
     );

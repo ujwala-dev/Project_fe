@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { IdeaService } from '../../../services/idea.service';
 import { ReviewService } from '../../../services/review.service';
 import { AuthService } from '../../../services/auth.service';
@@ -18,6 +18,7 @@ export class DecisionComponent implements OnInit {
   ideas: Idea[] = [];
   selected: Idea | null = null;
   feedback = '';
+  rejectionReason = '';
   decision: 'Approve' | 'Reject' = 'Approve';
   reviews: Review[] = [];
   currentUserID = 0;
@@ -25,6 +26,8 @@ export class DecisionComponent implements OnInit {
   comments: Comment[] = [];
   filterStatus: 'All' | 'Rejected' | 'UnderReview' | 'Approved' = 'All';
   isLoading = false;
+  showRejectionModal = false;
+  canEditStatus = false; // Permission to edit status
   statusOptions: ('All' | 'Rejected' | 'UnderReview' | 'Approved')[] = [
     'All',
     'Rejected',
@@ -41,6 +44,7 @@ export class DecisionComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private ideaService: IdeaService,
     private reviewService: ReviewService,
     private authService: AuthService,
@@ -67,7 +71,9 @@ export class DecisionComponent implements OnInit {
         this.isLoading = false;
         // Auto-select idea if an id was passed (e.g. from manager dashboard)
         if (selectIdeaId) {
-          const found = this.ideas.find((i) => String(i.ideaID) === selectIdeaId);
+          const found = this.ideas.find(
+            (i) => String(i.ideaID) === selectIdeaId,
+          );
           if (found) this.select(found);
         }
       },
@@ -84,7 +90,22 @@ export class DecisionComponent implements OnInit {
 
   select(idea: Idea | null) {
     this.selected = idea;
+    this.rejectionReason = '';
+
     if (idea) {
+      // Update URL with the new idea's ID
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { id: idea.ideaID },
+        queryParamsHandling: 'merge',
+      });
+
+      // Check if current user can edit status
+      // Only the reviewer of an approved/rejected idea can change status
+      this.canEditStatus =
+        idea.status === 'UnderReview' ||
+        idea.reviewedByID === this.currentUserID;
+
       // Load reviews from backend
       this.reviewService.getReviewsForIdea(idea.ideaID).subscribe({
         next: (reviews: Review[]) => {
@@ -111,48 +132,138 @@ export class DecisionComponent implements OnInit {
 
   submitReview() {
     if (!this.selected || !this.feedback.trim()) {
-      alert('Please provide feedback for your review.');
+      alert('Please provide feedback.');
       return;
     }
 
+    // Submit just feedback without a decision
+    this.submitFeedback();
+  }
+
+  submitFeedback() {
+    if (!this.selected || !this.feedback.trim()) {
+      alert('Please provide feedback.');
+      return;
+    }
+
+    // Call backend to save feedback as a comment
+    // The feedback goes to comments, not to reviews
+    const commentData = {
+      ideaId: this.selected.ideaID,
+      text: this.feedback.trim(),
+    };
+
+    this.ideaService.addComment(commentData).subscribe({
+      next: (response: any) => {
+        console.log('Feedback submitted successfully:', response);
+        alert('Feedback submitted successfully!');
+        this.feedback = '';
+
+        // Reload comments
+        if (this.selected) {
+          this.ideaService.getCommentsForIdea(this.selected.ideaID).subscribe({
+            next: (comments: Comment[]) => {
+              this.comments = comments;
+            },
+          });
+        }
+      },
+      error: (error: any) => {
+        console.error('Error submitting feedback:', error);
+        const errorMsg =
+          error.error?.message || error.error || 'Failed to submit feedback.';
+        alert(errorMsg);
+      },
+    });
+  }
+
+  submitRejectionWithReason() {
+    if (!this.rejectionReason.trim()) {
+      alert('Please provide a reason for rejection.');
+      return;
+    }
+
+    this.submitReviewWithDecision('Reject');
+  }
+
+  submitReviewWithDecision(decision: 'Approve' | 'Reject') {
+    if (!this.selected) {
+      return;
+    }
+
+    const rejectionReason =
+      decision === 'Reject' ? this.rejectionReason.trim() : undefined;
+
     this.reviewService
-      .submitReview(this.selected.ideaID, this.feedback.trim(), this.decision)
+      .submitReview(
+        this.selected.ideaID,
+        '', // No feedback needed for decision
+        decision,
+        rejectionReason,
+      )
       .subscribe({
         next: (response: any) => {
           console.log('Review submitted successfully:', response);
-          alert('Review submitted successfully!');
-          this.feedback = '';
+          alert(`Idea ${decision} successfully!`);
+          this.rejectionReason = '';
+          this.showRejectionModal = false;
 
-          // Reload reviews
-          if (this.selected) {
-            this.reviewService
-              .getReviewsForIdea(this.selected.ideaID)
-              .subscribe({
-                next: (reviews: Review[]) => {
-                  this.reviews = reviews;
-                },
-              });
-          }
+          // Reload ideas to update status
+          this.loadIdeasForReview();
         },
         error: (error: any) => {
           console.error('Error submitting review:', error);
           const errorMsg =
-            error.error?.message ||
-            error.error ||
-            'Failed to submit review. You may have already reviewed this idea.';
+            error.error?.message || error.error || 'Failed to submit review.';
           alert(errorMsg);
+          this.showRejectionModal = false;
         },
       });
   }
 
+  closeRejectionModal() {
+    this.showRejectionModal = false;
+    this.rejectionReason = '';
+  }
+
+  submitRejectionFromStatusChange() {
+    if (!this.rejectionReason.trim()) {
+      alert('Please provide a reason for rejection.');
+      return;
+    }
+
+    this.performStatusChange('Rejected');
+    this.closeRejectionModal();
+  }
+
   changeStatus(status: 'UnderReview' | 'Approved' | 'Rejected') {
     if (!this.selected) return;
+
+    // Check if user has permission to change status
+    if (!this.canEditStatus) {
+      alert(
+        'You do not have permission to change the status of this idea. Only the reviewer can modify it.',
+      );
+      return;
+    }
+
+    // If changing to Rejected, show modal for rejection reason
+    if (status === 'Rejected') {
+      this.showRejectionModal = true;
+      return;
+    }
 
     if (
       !confirm(`Are you sure you want to change the status to "${status}"?`)
     ) {
       return;
     }
+
+    this.performStatusChange(status);
+  }
+
+  performStatusChange(status: 'UnderReview' | 'Approved' | 'Rejected') {
+    if (!this.selected) return;
 
     this.reviewService
       .changeIdeaStatus(this.selected.ideaID, status)

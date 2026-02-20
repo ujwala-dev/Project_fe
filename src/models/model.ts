@@ -28,6 +28,8 @@ export interface Idea {
   Comments?: Comment[];
   hasVoted?: boolean; // Indicates if current user has voted on this idea
   userVoteType?: 'Upvote' | 'Downvote'; // Type of vote the current user gave
+  reviewedByID?: number; // ID of the manager who reviewed this idea
+  reviewedByName?: string; // Name of the manager who reviewed this idea
 }
 export interface Review {
   reviewID?: number;
@@ -37,6 +39,7 @@ export interface Review {
   feedback: string;
   decision: 'Approved' | 'Rejected';
   reviewDate?: string;
+  rejectionReason?: string; // Mandatory reason for rejection
 }
 
 export interface Comment {
