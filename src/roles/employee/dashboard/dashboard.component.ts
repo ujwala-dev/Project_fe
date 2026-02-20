@@ -94,6 +94,33 @@ export class DashboardComponent implements OnInit {
 
   selectIdea(idea: Idea) {
     this.selected = idea;
+
+    // Load reviewer information for approved/rejected ideas
+    if (idea.status !== 'UnderReview') {
+      console.log(
+        'Loading reviewer info for idea:',
+        idea.ideaID,
+        'Status:',
+        idea.status,
+      );
+      this.reviewService.getIdeaWithReviewerInfo(idea.ideaID).subscribe({
+        next: (ideaWithReviewer: any) => {
+          console.log('Received reviewer data:', ideaWithReviewer);
+          if (this.selected && this.selected.ideaID === idea.ideaID) {
+            this.selected.reviewedByID = ideaWithReviewer.reviewedByID;
+            this.selected.reviewedByName = ideaWithReviewer.reviewedByName;
+            console.log('Updated selected idea with:', {
+              reviewedByID: this.selected.reviewedByID,
+              reviewedByName: this.selected.reviewedByName,
+            });
+          }
+        },
+        error: (error) => {
+          console.error('Error loading reviewer info:', error);
+        },
+      });
+    }
+
     // Load comments from backend
     this.ideaService.getCommentsForIdea(idea.ideaID).subscribe({
       next: (comments) => {

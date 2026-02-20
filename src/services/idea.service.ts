@@ -32,6 +32,8 @@ export class IdeaService {
           category: idea.categoryName || idea.category || '',
           upvotes: idea.upvotes || 0,
           downvotes: idea.downvotes || 0,
+          reviewedByID: idea.reviewedByUserId || idea.reviewedByID,
+          reviewedByName: idea.reviewedByUserName || idea.reviewedByName,
         }));
         console.log('Mapped ideas:', mappedIdeas);
         this.ideas$.next(mappedIdeas);
@@ -64,6 +66,8 @@ export class IdeaService {
           category: idea.categoryName || idea.category || '',
           upvotes: idea.upvotes || 0,
           downvotes: idea.downvotes || 0,
+          reviewedByID: idea.reviewedByUserId || idea.reviewedByID,
+          reviewedByName: idea.reviewedByUserName || idea.reviewedByName,
         })),
       ),
     );

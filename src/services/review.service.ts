@@ -151,6 +151,25 @@ export class ReviewService {
     );
   }
 
+  // Get idea with reviewer information (when Approved/Rejected)
+  getIdeaWithReviewerInfo(ideaID: number | string): Observable<any> {
+    return this.http.get<any>(`${this.reviewApiUrl}/ideas/${ideaID}`).pipe(
+      tap((response) => {
+        console.log('Idea with reviewer info - Raw response:', response);
+      }),
+      map((idea) => {
+        const mapped = {
+          ...idea,
+          ideaID: idea.ideaId || idea.ideaID,
+          reviewedByID: idea.reviewedByUserId || idea.reviewedByID,
+          reviewedByName: idea.reviewedByUserName || idea.reviewedByName,
+        };
+        console.log('Idea with reviewer info - Mapped:', mapped);
+        return mapped;
+      }),
+    );
+  }
+
   changeIdeaStatus(
     ideaID: number | string,
     status: 'Rejected' | 'UnderReview' | 'Approved',
