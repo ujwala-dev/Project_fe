@@ -118,7 +118,7 @@
             class="hover:bg-blue-50 transition-colors border-b border-gray-100"
           >
             <td class="px-4 py-4 text-sm font-medium text-gray-900">
-              {{ report.category }}
+              {{ report.categoryName }}
             </td>
             <td class="px-4 py-4 text-sm text-gray-600">
               <span
@@ -141,23 +141,13 @@
                 >
                   <div
                     class="bg-blue-500 h-full transition-all"
-                    [style.width.%]="
-                      getApprovalRate(
-                        report.approvedIdeas,
-                        report.ideasSubmitted
-                      )
-                    "
+                    [style.width.%]="report.approvalRate"
                   ></div>
                 </div>
                 <span
                   class="text-xs font-semibold text-blue-600 min-w-12 text-right"
                 >
-                  {{
-                    getApprovalRate(
-                      report.approvedIdeas,
-                      report.ideasSubmitted
-                    )
-                  }}%
+                  {{ report.approvalRate }}%
                 </span>
               </div>
             </td>

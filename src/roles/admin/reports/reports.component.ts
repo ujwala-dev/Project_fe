@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { IdeaService } from '../../../services/idea.service';
 import { UserService } from '../../../services/user.service';
 import { CategoryService } from '../../../services/category.service';
+import {
+  ReportsService,
+  CategoryReport,
+} from '../../../services/reports.service';
 import { Chart, registerables } from 'chart.js';
 import { Idea } from '../../../models/model';
 
@@ -16,11 +20,7 @@ Chart.register(...registerables);
   standalone: true,
 })
 export class ReportsComponent implements OnInit, AfterViewInit {
-  categoryReports: {
-    category: string;
-    ideasSubmitted: number;
-    approvedIdeas: number;
-  }[] = [];
+  categoryReports: CategoryReport[] = [];
 
   totalIdeas = 0;
   totalApproved = 0;
@@ -34,15 +34,41 @@ export class ReportsComponent implements OnInit, AfterViewInit {
     private ideaService: IdeaService,
     private userService: UserService,
     private categoryService: CategoryService,
+    private reportsService: ReportsService,
   ) {}
 
   ngOnInit(): void {
     this.generateReports();
   }
 
-  ngAfterViewInit(): void {}
+  ngAfterViewInit(): void {
+    // Charts are initialized in generateReports after data is loaded
+  }
 
   generateReports(): void {
+    // Load system overview from reports service
+    this.reportsService.getSystemOverview().subscribe({
+      next: (report) => {
+        this.totalIdeas = report.totalIdeas;
+        this.totalApproved = report.totalApprovedIdeas;
+        this.totalUsers = report.totalUsers;
+        this.approvalRate = report.approvalRate;
+
+        // Initialize charts with data
+        this.initializeIdeaStatusChart(report.ideaStatusDistribution);
+
+        // Load category reports
+        this.loadCategoryReports();
+      },
+      error: (error) => {
+        console.error('Error loading system overview:', error);
+        // Fallback to individual service calls
+        this.generateReportsFallback();
+      },
+    });
+  }
+
+  generateReportsFallback(): void {
     this.ideaService.getAllIdeas().subscribe((ideas) => {
       this.totalIdeas = ideas.length;
       this.totalApproved = ideas.filter((i) => i.status === 'Approved').length;
@@ -51,29 +77,31 @@ export class ReportsComponent implements OnInit, AfterViewInit {
           ? Math.round((this.totalApproved / this.totalIdeas) * 100)
           : 0;
 
-      this.initializeIdeaStatusChart(ideas);
+      this.initializeIdeaStatusChartFromIdeas(ideas);
+    });
 
-      this.categoryService.getAllCategories().subscribe((categories) => {
-        this.categoryReports = categories
-          .map((cat) => {
-            const catIdeas = ideas.filter(
-              (i) => i.categoryID === cat.categoryID,
-            );
-            const catApproved = catIdeas.filter((i) => i.status === 'Approved');
+    this.userService.getAllUsers().subscribe((users) => {
+      this.totalUsers = users.length;
+    });
 
-            return {
-              category: cat.name,
-              ideasSubmitted: catIdeas.length,
-              approvedIdeas: catApproved.length,
-            };
-          })
+    this.loadCategoryReports();
+  }
+
+  loadCategoryReports(): void {
+    this.reportsService.getCategoryReports().subscribe({
+      next: (reports) => {
+        this.categoryReports = reports
           .filter((r) => r.ideasSubmitted > 0)
           .sort((a, b) => b.ideasSubmitted - a.ideasSubmitted);
 
         setTimeout(() => {
           this.initializeCategoryChart();
         }, 100);
-      });
+      },
+      error: (error) => {
+        console.error('Error loading category reports:', error);
+        this.categoryReports = [];
+      },
     });
   }
 
@@ -88,7 +116,7 @@ export class ReportsComponent implements OnInit, AfterViewInit {
     this.categoryChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: this.categoryReports.map((r) => r.category),
+        labels: this.categoryReports.map((r) => r.categoryName),
         datasets: [
           {
             data: this.categoryReports.map((r) => r.ideasSubmitted),
@@ -124,7 +152,7 @@ export class ReportsComponent implements OnInit, AfterViewInit {
     });
   }
 
-  initializeIdeaStatusChart(ideas: Idea[]): void {
+  initializeIdeaStatusChart(statusDistribution: any[]): void {
     const ctx = document.getElementById('ideaStatusChart') as HTMLCanvasElement;
     if (!ctx) return;
 
@@ -132,8 +160,50 @@ export class ReportsComponent implements OnInit, AfterViewInit {
       this.ideaStatusChart.destroy();
     }
 
-    const approved = this.totalApproved;
-    const pending = this.totalIdeas - this.totalApproved;
+    const approved =
+      statusDistribution.find((s) => s.status === 'Approved')?.count || 0;
+    const pending = this.totalIdeas - approved;
+
+    this.ideaStatusChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['Approved', 'Pending'],
+        datasets: [
+          {
+            data: [approved, pending],
+            backgroundColor: ['#10b981', '#f59e0b'],
+            borderColor: '#ffffff',
+            borderWidth: 2,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              font: { size: 12, weight: 500 },
+              usePointStyle: true,
+              padding: 20,
+            },
+          },
+        },
+      },
+    });
+  }
+
+  initializeIdeaStatusChartFromIdeas(ideas: Idea[]): void {
+    const approved = ideas.filter((i) => i.status === 'Approved').length;
+    const pending = ideas.length - approved;
+
+    const ctx = document.getElementById('ideaStatusChart') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    if (this.ideaStatusChart) {
+      this.ideaStatusChart.destroy();
+    }
 
     this.ideaStatusChart = new Chart(ctx, {
       type: 'pie',
