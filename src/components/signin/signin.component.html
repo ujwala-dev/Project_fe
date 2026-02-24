@@ -77,6 +77,11 @@
             </span>
           </div>
 
+          <!-- Error Message -->
+          <div *ngIf="errorMessage" class="bg-red-100 border border-red-400 text-red-700 text-sm px-4 py-2 rounded-md">
+            {{ errorMessage }}
+          </div>
+
           <button
             type="submit"
             class="w-full bg-[#638ECB] hover:bg-[#395886] text-white font-medium py-2.5 mt-3 transition rounded-md"

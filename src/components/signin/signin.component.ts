@@ -21,6 +21,7 @@ export class SigninComponent {
   submitted = false;
   loading = false;
   showPass = false;
+  errorMessage = '';
 
   constructor(
     private fb: FormBuilder,
@@ -28,8 +29,16 @@ export class SigninComponent {
     private authService: AuthService,
   ) {
     this.form = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      email: ['', [
+        Validators.required,
+        Validators.email,
+        Validators.maxLength(100),
+      ]],
+      password: ['', [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.maxLength(20),
+      ]],
     });
   }
 
@@ -66,34 +75,21 @@ export class SigninComponent {
       },
       error: (error) => {
         this.loading = false;
-        console.error('Full login error object:', error);
-        console.error('Error status:', error.status);
-        console.error('Error error:', error.error);
-        console.error('Error message:', error.message);
+        console.error('Login error:', error.status, error.error);
 
-        let errorMessage = 'Login failed. Please try again.';
-
-        // Handle different error types
         if (error.status === 0) {
-          errorMessage =
-            'Cannot connect to server. Please check:\n' +
-            '1. Backend is running at https://localhost:7175\n' +
-            '2. SSL certificate is trusted\n' +
-            '3. CORS is configured on backend\n' +
-            '4. Network connection is active';
-        } else if (error.error?.success === false) {
-          errorMessage =
-            error.error?.message || 'Login failed. Please try again.';
+          this.errorMessage = 'Cannot connect to server. Please try again later.';
+        } else if (error.status === 401) {
+          this.errorMessage = 'Invalid email or password.';
+        } else if (error.status === 403) {
+          this.errorMessage = 'Your account is deactivated. Please contact the admin.';
         } else if (error.error?.message) {
-          errorMessage = error.error.message;
+          this.errorMessage = error.error.message;
         } else if (typeof error.error === 'string') {
-          errorMessage = error.error;
-        } else if (error.message) {
-          errorMessage = error.message;
+          this.errorMessage = error.error;
+        } else {
+          this.errorMessage = 'Login failed. Please try again.';
         }
-
-        console.error('Final error message:', errorMessage);
-        alert(errorMessage);
       },
     });
   }
@@ -119,21 +115,18 @@ export class SigninComponent {
     }
 
     if (field.errors['required']) {
-      return (
-        fieldName.charAt(0).toUpperCase() + fieldName.slice(1) + ' is required'
-      );
-    }
-    if (field.errors['minlength']) {
-      return (
-        'Minimum ' +
-        field.errors['minlength'].requiredLength +
-        ' characters needed'
-      );
+      return fieldName.charAt(0).toUpperCase() + fieldName.slice(1) + ' is required.';
     }
     if (field.errors['email']) {
-      return 'Please enter a valid email';
+      return 'Please enter a valid email address.';
+    }
+    if (field.errors['minlength']) {
+      return `Minimum ${field.errors['minlength'].requiredLength} characters required.`;
+    }
+    if (field.errors['maxlength']) {
+      return `Maximum ${field.errors['maxlength'].requiredLength} characters allowed.`;
     }
 
-    return 'Invalid field';
+    return 'Invalid field.';
   }
 }

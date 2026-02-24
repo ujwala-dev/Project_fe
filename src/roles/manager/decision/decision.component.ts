@@ -131,19 +131,8 @@ export class DecisionComponent implements OnInit {
     }
   }
 
-  submitReview() {
-    if (!this.selected || !this.feedback.trim()) {
-      alert('Please provide feedback.');
-      return;
-    }
-
-    // Submit feedback without a decision - just feedback
-    this.submitFeedback();
-  }
-
   submitFeedback() {
     if (!this.selected || !this.feedback.trim()) {
-      alert('Please provide feedback.');
       return;
     }
 
@@ -155,7 +144,6 @@ export class DecisionComponent implements OnInit {
       .subscribe({
         next: (response: any) => {
           console.log('Feedback submitted successfully:', response);
-          alert('Feedback submitted successfully!');
           this.feedback = '';
           this.isSubmittingFeedback = false;
 
@@ -269,7 +257,6 @@ export class DecisionComponent implements OnInit {
       .subscribe({
         next: () => {
           console.log('Status changed successfully');
-          alert(`Status changed to ${status} successfully!`);
           this.isChangingStatus = false;
 
           if (this.selected) {
