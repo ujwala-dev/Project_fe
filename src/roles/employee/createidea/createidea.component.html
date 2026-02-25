@@ -1,4 +1,16 @@
 <div class="container mx-auto px-4 py-12 max-w-2xl pt-20">
+  <!-- Toast -->
+  <div
+    *ngIf="toastMessage"
+    class="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-sm font-semibold text-white"
+    [ngClass]="{
+      'bg-green-600': toastType === 'success',
+      'bg-red-600': toastType === 'error'
+    }"
+  >
+    {{ toastMessage }}
+  </div>
+
   <div class="mb-8 pl-1">
     <a
       routerLink="/employee/dashboard"

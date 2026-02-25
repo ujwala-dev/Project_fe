@@ -314,4 +314,65 @@
       </div>
     </div>
   </div>
+
+  <!-- Downvote reason modal -->
+  <div
+    *ngIf="showDownvoteModal"
+    class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 z-50"
+  >
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-gray-100 p-6 space-y-4 animate-fade-in">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h3 class="text-lg font-bold text-gray-900">Add a reason for dislike</h3>
+          <p class="text-sm text-gray-500">A short note helps the author understand the concern.</p>
+        </div>
+        <button
+          class="text-gray-400 hover:text-gray-600"
+          aria-label="Close"
+          (click)="closeDownvoteModal()"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-sm font-semibold text-gray-700">Your comment</label>
+        <textarea
+          [(ngModel)]="downvoteReason"
+          rows="3"
+          class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+          placeholder="Explain why you dislike this idea"
+        ></textarea>
+        <div *ngIf="downvoteError" class="text-xs text-red-600">{{ downvoteError }}</div>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button
+          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100"
+          (click)="closeDownvoteModal()"
+        >
+          Cancel
+        </button>
+        <button
+          class="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-red-500 hover:bg-red-600 shadow-sm"
+          (click)="submitDownvote()"
+        >
+          Submit Downvote
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div
+    *ngIf="toastMessage"
+    class="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-sm font-semibold text-white"
+    [ngClass]="{
+      'bg-green-600': toastType === 'success',
+      'bg-red-600': toastType === 'error',
+      'bg-gray-800': toastType === 'info'
+    }"
+  >
+    {{ toastMessage }}
+  </div>
 </div>

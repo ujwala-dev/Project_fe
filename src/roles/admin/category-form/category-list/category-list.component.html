@@ -58,7 +58,7 @@
               </button>
               <button
                 class="px-5 py-2  text-xs bg-red-500 text-white hover:bg-red-600 border-none rounded-md font-medium cursor-pointer transition-all duration-200"
-                (click)="deleteCategory(category)"
+                (click)="promptDelete(category)"
                 title="Delete category"
               >
                 Delete
@@ -78,13 +78,65 @@
   </ng-template>
 
   <!-- Category Form Modal -->
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" *ngIf="showForm" (click)="closeForm()">
-    <div class="bg-white rounded-lg max-w-md w-11/12 max-h-90vh overflow-y-auto" (click)="$event.stopPropagation()">
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50" *ngIf="showForm" (click)="closeForm()">
+    <div class="bg-white rounded-lg max-w-2xl w-11/12 max-h-90vh overflow-y-auto" (click)="$event.stopPropagation()">
       <app-category-form
         [category]="editingCategory"
         (saved)="onFormSaved()"
         (cancelled)="closeForm()"
       ></app-category-form>
+    </div>
+  </div>
+
+  <!-- Delete confirmation modal -->
+  <div
+    *ngIf="showDeleteConfirm"
+    class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4"
+    (click)="cancelDelete()"
+  >
+    <div
+      class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 space-y-4"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">Delete category?</h3>
+          <p class="text-sm text-gray-600">
+            {{ categoryToDelete?.name || 'this category' }} will be removed permanently.
+          </p>
+        </div>
+        <button
+          class="text-gray-400 hover:text-gray-600"
+          aria-label="Close"
+          (click)="cancelDelete()"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button
+          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200"
+          (click)="cancelDelete()"
+          [disabled]="isDeleting"
+        >
+          Cancel
+        </button>
+        <button
+          class="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-60"
+          (click)="confirmDelete()"
+          [disabled]="isDeleting"
+        >
+          {{ isDeleting ? 'Deleting...' : 'Delete' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success toast -->
+  <div *ngIf="successMessage" class="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
+    <div class="bg-emerald-500 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium">
+      {{ successMessage }}
     </div>
   </div>
 </div>

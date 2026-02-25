@@ -39,6 +39,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   isLoggedIn = signal(false);
   userName = signal<string | undefined>(undefined);
   userRole = signal<UserRole | null>(null);
+  successMessage = signal('');
+  private successTimeout: any;
 
   userInitial = computed(() => {
     const name = this.userName();
@@ -91,4 +93,5 @@ export class NavbarComponent implements OnInit, OnDestroy {
     const inDropdown = target.closest('[data-dropdown-root]');
     if (!inDropdown) this.closeDropdown();
   }
+
 }

@@ -16,6 +16,11 @@ export class CategoryListComponent implements OnInit {
   categories: Category[] = [];
   showForm = false;
   editingCategory: Category | null = null;
+  successMessage = '';
+  private successTimeout: any;
+  showDeleteConfirm = false;
+  categoryToDelete: Category | null = null;
+  isDeleting = false;
 
   constructor(private categoryService: CategoryService) {}
 
@@ -44,25 +49,50 @@ export class CategoryListComponent implements OnInit {
     this.categoryService.toggleCategoryStatus(category.categoryID);
   }
 
-  deleteCategory(category: Category): void {
-    if (
-      confirm(
-        `Are you sure you want to delete "${category.name}"? This action cannot be undone.`,
-      )
-    ) {
-      this.categoryService.deleteCategory(category.categoryID).subscribe({
-        next: () => {
-          // Category list will be updated automatically via the service
-        },
-        error: (error) => {
-          console.error('Error deleting category:', error);
-          alert('Failed to delete category. Please try again.');
-        },
-      });
+  promptDelete(category: Category): void {
+    this.categoryToDelete = category;
+    this.showDeleteConfirm = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeleteConfirm = false;
+    this.categoryToDelete = null;
+  }
+
+  confirmDelete(): void {
+    if (!this.categoryToDelete || this.isDeleting) {
+      return;
     }
+
+    this.isDeleting = true;
+    this.categoryService.deleteCategory(this.categoryToDelete.categoryID).subscribe({
+      next: () => {
+        // Category list will be updated automatically via the service
+        this.cancelDelete();
+      },
+      error: (error) => {
+        console.error('Error deleting category:', error);
+        alert('Failed to delete category. Please try again.');
+      },
+      complete: () => {
+        this.isDeleting = false;
+      },
+    });
   }
 
   onFormSaved(): void {
+    const wasEdit = !!this.editingCategory;
     this.closeForm();
+    this.showSuccess(wasEdit ? 'Category updated successfully' : 'Category created successfully');
+  }
+
+  private showSuccess(message: string): void {
+    this.successMessage = message;
+    if (this.successTimeout) {
+      clearTimeout(this.successTimeout);
+    }
+    this.successTimeout = setTimeout(() => {
+      this.successMessage = '';
+    }, 3000);
   }
 }

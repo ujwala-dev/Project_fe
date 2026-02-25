@@ -25,6 +25,10 @@ export class CreateideaComponent implements OnInit {
   categories: Category[] = [];
   currentRole: UserRole | null = null;
   currentUserId = 0;
+  // Toast state
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
+  toastTimer: any;
 
   constructor(
     private fb: FormBuilder,
@@ -103,7 +107,10 @@ export class CreateideaComponent implements OnInit {
         setTimeout(() => {
           this.notificationService.refresh();
         }, 1000); // Small delay to ensure backend has created notifications
-        this.router.navigate(['employee/dashboard']);
+        this.showToast('Idea submitted successfully!', 'success');
+        setTimeout(() => {
+          this.router.navigate(['employee/dashboard']);
+        }, 1200);
       },
       error: (error) => {
         console.error('Full error details:', error);
@@ -126,8 +133,17 @@ export class CreateideaComponent implements OnInit {
           errorMsg = error.message;
         }
 
-        alert(`Error: ${errorMsg}`);
+        this.showToast(errorMsg, 'error');
       },
     });
+  }
+
+  private showToast(message: string, type: 'success' | 'error') {
+    this.toastMessage = message;
+    this.toastType = type;
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
+      this.toastMessage = '';
+    }, 2000);
   }
 }

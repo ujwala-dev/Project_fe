@@ -12,9 +12,8 @@ import {
   Review,
   User,
 } from '../../../models/model';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
@@ -33,11 +32,26 @@ export class DashboardComponent implements OnInit {
   newComment = '';
   currentUser: User | null = null;
 
+  // Downvote modal & toast state
+  showDownvoteModal = false;
+  pendingDownvoteIdea: Idea | null = null;
+  downvoteReason = '';
+  downvoteError = '';
+  toastMessage = '';
+  toastType: 'success' | 'error' | 'info' | '' = '';
+  toastTimer: any;
+
   get filteredIdeas(): Idea[] {
-    if (this.filterStatus === 'All') {
-      return this.ideas;
-    }
+    if (this.filterStatus === 'All') return this.ideas;
     return this.ideas.filter((idea) => idea.status === this.filterStatus);
+  }
+
+  get downvoteComments(): IdeaComment[] {
+    return this.comments.filter((c) => c.isDownvoteComment);
+  }
+
+  get regularComments(): IdeaComment[] {
+    return this.comments.filter((c) => !c.isDownvoteComment);
   }
 
   constructor(
@@ -49,16 +63,11 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCurrentUser();
-    // Set IdeaService reference in VoteService for auto-reload after voting
     this.voteService.setIdeaService(this.ideaService);
-    // Load fresh ideas from backend for the current user session
     this.ideaService.loadIdeas();
-    // Subscribe to get updates whenever ideas change
     this.ideaService.getAllIdeas().subscribe((list) => {
       this.ideas = list;
-      // Check if current user has voted on each idea
       this.checkAllUserVotes();
-      console.log('Dashboard received ideas:', this.ideas.length, 'ideas');
     });
   }
 
@@ -67,7 +76,6 @@ export class DashboardComponent implements OnInit {
   }
 
   checkAllUserVotes() {
-    // Use forkJoin to wait for all vote checks to complete
     if (this.ideas.length === 0) return;
 
     const voteChecks = this.ideas.map((idea) =>
@@ -84,9 +92,6 @@ export class DashboardComponent implements OnInit {
         if (index < this.ideas.length) {
           this.ideas[index].hasVoted = result.hasVoted || false;
           this.ideas[index].userVoteType = result.voteType || null;
-          console.log(
-            `Idea ${this.ideas[index].ideaID}: hasVoted=${this.ideas[index].hasVoted}`,
-          );
         }
       });
     });
@@ -95,26 +100,13 @@ export class DashboardComponent implements OnInit {
   selectIdea(idea: Idea) {
     this.selected = idea;
 
-    // Load reviewer information for approved/rejected ideas
     if (idea.status !== 'UnderReview') {
-      console.log(
-        'Loading reviewer info for idea:',
-        idea.ideaID,
-        'Status:',
-        idea.status,
-      );
       this.reviewService.getIdeaWithReviewerInfo(idea.ideaID).subscribe({
         next: (ideaWithReviewer: any) => {
-          console.log('Received reviewer data:', ideaWithReviewer);
           if (this.selected && this.selected.ideaID === idea.ideaID) {
             this.selected.reviewedByID = ideaWithReviewer.reviewedByID;
             this.selected.reviewedByName = ideaWithReviewer.reviewedByName;
             this.selected.reviewComment = ideaWithReviewer.reviewComment;
-            console.log('Updated selected idea with:', {
-              reviewedByID: this.selected.reviewedByID,
-              reviewedByName: this.selected.reviewedByName,
-              reviewComment: this.selected.reviewComment,
-            });
           }
         },
         error: (error) => {
@@ -123,20 +115,16 @@ export class DashboardComponent implements OnInit {
       });
     }
 
-    // Load comments from backend
     this.ideaService.getCommentsForIdea(idea.ideaID).subscribe({
-      next: (comments) => {
-        this.comments = comments;
-      },
+      next: (comments) => (this.comments = comments),
       error: (error) => {
         console.error('Error loading comments:', error);
         this.comments = [];
       },
     });
+
     this.reviewService.getReviewsForIdea(idea.ideaID).subscribe({
-      next: (reviews: Review[]) => {
-        this.reviews = reviews;
-      },
+      next: (reviews: Review[]) => (this.reviews = reviews),
       error: (error: any) => {
         console.error('Error loading reviews:', error);
         this.reviews = [];
@@ -147,103 +135,129 @@ export class DashboardComponent implements OnInit {
   addComment() {
     if (!this.selected || !this.currentUser || !this.newComment.trim()) return;
 
+    const text = this.newComment.trim();
+
     this.ideaService
       .addComment({
         ideaID: this.selected.ideaID,
         userID: this.currentUser.userID,
-        text: this.newComment.trim(),
+        text,
         userName: this.currentUser.name,
       })
       .subscribe({
-        next: (comment) => {
+        next: () => {
           this.newComment = '';
-          // Reload comments
           this.ideaService.getCommentsForIdea(this.selected!.ideaID).subscribe({
-            next: (comments) => {
-              this.comments = comments;
-            },
+            next: (comments) => (this.comments = comments),
           });
         },
         error: (error) => {
           console.error('Error adding comment:', error);
-          alert('Failed to add comment. Please try again.');
+          this.showToast('Failed to add comment. Please try again.', 'error');
         },
       });
   }
 
   upvote(idea: Idea) {
-    if (!this.currentUser) return;
+    if (!this.currentUser) {
+      this.showToast('Please sign in to vote.', 'error');
+      return;
+    }
     if (idea.hasVoted) {
-      alert('You have already voted on this idea.');
+      this.showToast('You have already voted on this idea.', 'info');
       return;
     }
 
-    // Store current scroll position
     const scrollY = window.scrollY;
 
     this.voteService.upvoteIdea(idea.ideaID).subscribe({
-      next: (response: any) => {
-        console.log('Upvoted successfully');
-        // Update the UI only on success
+      next: () => {
         idea.upvotes = (idea.upvotes || 0) + 1;
         idea.hasVoted = true;
         idea.userVoteType = 'Upvote';
-        // Restore scroll position
         window.scrollTo(0, scrollY);
       },
       error: (error: any) => {
         console.error('Error upvoting:', error);
         const errorMsg =
           error.error?.message || error.error || 'Failed to upvote';
-        alert(errorMsg);
+        this.showToast(errorMsg, 'error');
       },
     });
   }
 
   downvote(idea: Idea) {
-    if (!this.currentUser) return;
-
+    if (!this.currentUser) {
+      this.showToast('Please sign in to vote.', 'error');
+      return;
+    }
     if (idea.hasVoted) {
-      alert('You have already voted on this idea.');
+      this.showToast('You have already voted on this idea.', 'info');
       return;
     }
 
-    // Prompt for comment (mandatory for downvote)
-    const comment = prompt(
-      'Please provide a reason for your downvote (mandatory):',
-    );
+    this.pendingDownvoteIdea = idea;
+    this.downvoteReason = '';
+    this.downvoteError = '';
+    this.showDownvoteModal = true;
+  }
 
-    if (comment === null) {
-      // User cancelled
+  closeDownvoteModal() {
+    this.showDownvoteModal = false;
+    this.pendingDownvoteIdea = null;
+    this.downvoteReason = '';
+    this.downvoteError = '';
+  }
+
+  submitDownvote() {
+    if (!this.pendingDownvoteIdea || !this.currentUser) {
+      this.closeDownvoteModal();
       return;
     }
 
-    if (!comment || comment.trim() === '') {
-      alert(
-        'Comment is mandatory when downvoting. Please provide a reason for your downvote.',
-      );
+    if (!this.downvoteReason.trim()) {
+      this.downvoteError = 'Comment is mandatory when downvoting.';
       return;
     }
 
-    // Store current scroll position
+    const idea = this.pendingDownvoteIdea;
+    const reason = this.downvoteReason.trim();
     const scrollY = window.scrollY;
 
-    this.voteService.downvoteIdea(idea.ideaID, comment.trim()).subscribe({
-      next: (response: any) => {
-        console.log('Downvoted successfully with comment');
-        // Update the UI only on success
+    this.voteService.downvoteIdea(idea.ideaID, reason).subscribe({
+      next: () => {
         idea.downvotes = (idea.downvotes || 0) + 1;
         idea.hasVoted = true;
         idea.userVoteType = 'Downvote';
-        // Restore scroll position
+
+        if (this.selected && this.selected.ideaID === idea.ideaID) {
+          this.ideaService.getCommentsForIdea(idea.ideaID).subscribe({
+            next: (comments) => (this.comments = comments),
+            error: (err) => console.error('Error reloading comments:', err),
+          });
+        }
+
+        this.showToast('Downvote submitted with comment.', 'success');
+        this.closeDownvoteModal();
         window.scrollTo(0, scrollY);
       },
       error: (error: any) => {
         console.error('Error downvoting:', error);
         const errorMsg =
           error.error?.message || error.error || 'Failed to downvote';
-        alert(errorMsg);
+        this.downvoteError = errorMsg;
+        this.showToast(errorMsg, 'error');
       },
     });
+  }
+
+  private showToast(message: string, type: 'success' | 'error' | 'info') {
+    this.toastMessage = message;
+    this.toastType = type;
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
+      this.toastMessage = '';
+      this.toastType = '';
+    }, 3000);
   }
 }

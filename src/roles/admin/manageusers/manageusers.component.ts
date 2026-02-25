@@ -23,6 +23,15 @@ export class ManageusersComponent implements OnInit {
   selectedUser: UserDetails | null = null;
   showUserDetails = false;
 
+  showStatusConfirm = false;
+  targetUser: User | null = null;
+  targetStatus: 'Active' | 'Inactive' | null = null;
+  isUpdatingStatus = false;
+  successMessage = '';
+  errorMessage = '';
+  private successTimeout: any;
+  private errorTimeout: any;
+
   // Filter options
   filterRole: UserRole | 'All' = 'All';
   filterStatus: 'Active' | 'Inactive' | 'All' = 'All';
@@ -108,29 +117,58 @@ export class ManageusersComponent implements OnInit {
     this.applyFilters();
   }
 
-  toggleUserStatus(user: User): void {
-    const newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
-    const action = newStatus === 'Active' ? 'activate' : 'deactivate';
+  openStatusConfirm(user: User): void {
+    this.targetUser = user;
+    this.targetStatus = user.status === 'Active' ? 'Inactive' : 'Active';
+    this.showStatusConfirm = true;
+  }
 
-    if (confirm(`Are you sure you want to ${action} "${user.name}"?`)) {
-      this.userService.toggleUserStatus(user.userID, newStatus).subscribe({
-        next: () => {
-          this.loadUsers();
-          this.loadStatistics();
-        },
-        error: (error) => {
-          console.error('Error toggling user status:', error);
-          if (
-            error.status === 400 &&
-            error.error?.message?.includes('deactivate your own')
-          ) {
-            alert('You cannot deactivate your own account!');
-          } else {
-            alert('Failed to update user status. Please try again.');
-          }
-        },
-      });
+  cancelStatusConfirm(force = false): void {
+    if (this.isUpdatingStatus && !force) return;
+    this.showStatusConfirm = false;
+    this.targetUser = null;
+    this.targetStatus = null;
+  }
+
+  confirmStatusChange(): void {
+    if (!this.targetUser || !this.targetStatus || this.isUpdatingStatus) {
+      return;
     }
+
+    const statusToApply = this.targetStatus;
+    this.isUpdatingStatus = true;
+    this.userService.toggleUserStatus(this.targetUser.userID, statusToApply).subscribe({
+      next: () => {
+        this.loadUsers();
+        this.loadStatistics();
+        this.cancelStatusConfirm(true);
+        this.showSuccess(
+          statusToApply === 'Active'
+            ? 'User activated successfully'
+            : 'User deactivated successfully',
+        );
+      },
+      error: (error) => {
+        console.error('Error toggling user status:', error);
+        if (
+          error.status === 400 &&
+          error.error?.message?.includes('deactivate your own')
+        ) {
+          this.showError('You cannot deactivate your own account.');
+        } else if (error.status === 400 && error.error?.message?.includes('last admin')) {
+          this.showError(
+            'Cannot deactivate the last active admin. Please ensure at least one admin remains active.',
+          );
+        } else {
+          this.showError('Cannot deactivate the last active admin. Please ensure at least one admin remains active.');
+        }
+        this.isUpdatingStatus = false;
+        this.cancelStatusConfirm(true);
+      },
+      complete: () => {
+        this.isUpdatingStatus = false;
+      },
+    });
   }
 
   activateUser(user: User): void {
@@ -203,5 +241,25 @@ export class ManageusersComponent implements OnInit {
     return status === 'Active'
       ? 'bg-green-100 text-green-800'
       : 'bg-red-100 text-red-800';
+  }
+
+  private showSuccess(message: string): void {
+    this.successMessage = message;
+    if (this.successTimeout) {
+      clearTimeout(this.successTimeout);
+    }
+    this.successTimeout = setTimeout(() => {
+      this.successMessage = '';
+    }, 3000);
+  }
+
+  private showError(message: string): void {
+    this.errorMessage = message;
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+    }
+    this.errorTimeout = setTimeout(() => {
+      this.errorMessage = '';
+    }, 4000);
   }
 }
