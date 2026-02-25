@@ -10,7 +10,6 @@ import { Idea } from '../../../models/model';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css',
 })
 export class DashboardComponent implements OnInit {
   ideas: Idea[] = [];
@@ -41,5 +40,21 @@ export class DashboardComponent implements OnInit {
         });
       },
     });
+  }
+
+  get totalIdeas(): number {
+    return this.ideas.length;
+  }
+
+  get underReviewIdeas(): number {
+    return this.ideas.filter((i) => i.status === 'UnderReview').length;
+  }
+
+  get approvedIdeas(): number {
+    return this.ideas.filter((i) => i.status === 'Approved').length;
+  }
+
+  get rejectedIdeas(): number {
+    return this.ideas.filter((i) => i.status === 'Rejected').length;
   }
 }

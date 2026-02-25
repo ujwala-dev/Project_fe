@@ -355,14 +355,127 @@
           Cancel
         </button>
         <button
-          (click)="performStatusChange('Rejected')"
+          (click)="openFinalRejectionConfirm()"
           [disabled]="!rejectionReason.trim() || isChangingStatus"
           class="flex-1 px-4 py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {{ isChangingStatus ? "Rejecting..." : "Confirm Rejection" }}
+          {{ isChangingStatus ? "Rejecting..." : "Rejection" }}
         </button>
       </div>
     </div>
   </div>
 
+  <!-- Final Rejection Confirmation Modal -->
+  <div
+    *ngIf="showFinalRejectionConfirm"
+    class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-7 space-y-5 border border-gray-100"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h3 class="text-xl font-bold text-gray-900">Confirm Rejection</h3>
+          <p class="text-sm text-gray-600">
+            Are you sure you want to reject this idea? Reason provided:
+          </p>
+          <p class="mt-2 text-sm text-gray-800 bg-gray-50 rounded-lg p-3 border border-gray-100 whitespace-pre-wrap">
+            {{ rejectionReason }}
+          </p>
+        </div>
+        <button
+          class="text-gray-400 hover:text-gray-600"
+          aria-label="Close"
+          (click)="cancelFinalRejectionConfirm()"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button
+          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-60"
+          (click)="cancelFinalRejectionConfirm()"
+          [disabled]="isChangingStatus"
+        >
+          Cancel
+        </button>
+        <button
+          class="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 shadow-sm disabled:opacity-60"
+          (click)="performStatusChange('Rejected')"
+          [disabled]="isChangingStatus"
+        >
+          {{ isChangingStatus ? 'Rejecting...' : 'Confirm' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status confirmation modal (Under Review / Approved) -->
+  <div
+    *ngIf="showStatusConfirm"
+    class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4"
+  >
+    <div
+      class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-7 space-y-5 border border-gray-100"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h3 class="text-xl font-bold text-gray-900">
+            {{ pendingStatus === 'Approved' ? 'Approve this idea?' : 'Move to Under Review?' }}
+          </h3>
+          <p class="text-sm text-gray-600">
+            {{
+              pendingStatus === 'Approved'
+                ? 'This will approve the idea and record you as the reviewer.'
+                : 'This will mark the idea as under review. You can update the status again after evaluating feedback.'
+            }}
+          </p>
+        </div>
+        <button
+          class="text-gray-400 hover:text-gray-600"
+          aria-label="Close"
+          (click)="closeStatusConfirm()"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button
+          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-60"
+          (click)="closeStatusConfirm()"
+          [disabled]="isChangingStatus"
+        >
+          Cancel
+        </button>
+        <button
+          class="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm disabled:opacity-60"
+          (click)="confirmPendingStatus()"
+          [disabled]="isChangingStatus"
+        >
+          {{ isChangingStatus ? 'Updating...' : (pendingStatus === 'Approved' ? 'Approve' : 'Confirm') }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toasts -->
+<div class="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4 space-y-2 flex-col items-center pointer-events-none">
+  <div
+    *ngIf="successMessage"
+    class="bg-emerald-500 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium pointer-events-auto"
+  >
+    {{ successMessage }}
+  </div>
+  <div
+    *ngIf="errorMessage"
+    class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium pointer-events-auto"
+  >
+    {{ errorMessage }}
+  </div>
 </div>

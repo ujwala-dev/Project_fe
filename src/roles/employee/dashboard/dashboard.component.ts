@@ -25,6 +25,12 @@ import { catchError } from 'rxjs/operators';
 export class DashboardComponent implements OnInit {
   ideas: Idea[] = [];
   filterStatus: 'All' | 'UnderReview' | 'Approved' | 'Rejected' = 'All';
+  statusOptions: Array<'All' | 'UnderReview' | 'Approved' | 'Rejected'> = [
+    'All',
+    'UnderReview',
+    'Approved',
+    'Rejected',
+  ];
 
   selected: Idea | null = null;
   comments: IdeaComment[] = [];
@@ -130,6 +136,10 @@ export class DashboardComponent implements OnInit {
         this.reviews = [];
       },
     });
+  }
+
+  setFilter(status: 'All' | 'UnderReview' | 'Approved' | 'Rejected') {
+    this.filterStatus = status;
   }
 
   addComment() {

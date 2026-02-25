@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -28,6 +28,11 @@ export class DecisionComponent implements OnInit {
   isSubmittingFeedback = false;
   isChangingStatus = false;
   showRejectionModal = false;
+  showFinalRejectionConfirm = false;
+  successMessage = '';
+  errorMessage = '';
+  private successTimeout: any;
+  private errorTimeout: any;
   canEditStatus = false; // Permission to edit status
   statusOptions: ('All' | 'Rejected' | 'UnderReview' | 'Approved')[] = [
     'All',
@@ -35,6 +40,8 @@ export class DecisionComponent implements OnInit {
     'UnderReview',
     'Approved',
   ];
+  showStatusConfirm = false;
+  pendingStatus: 'UnderReview' | 'Approved' | null = null;
 
   get filteredIdeas(): Idea[] {
     if (this.filterStatus === 'All') {
@@ -49,6 +56,7 @@ export class DecisionComponent implements OnInit {
     private ideaService: IdeaService,
     private reviewService: ReviewService,
     private authService: AuthService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -146,6 +154,7 @@ export class DecisionComponent implements OnInit {
           console.log('Feedback submitted successfully:', response);
           this.feedback = '';
           this.isSubmittingFeedback = false;
+          this.showSuccess('Feedback submitted successfully');
 
           // Reload comments and reviews
           if (this.selected) {
@@ -214,6 +223,7 @@ export class DecisionComponent implements OnInit {
 
   closeRejectionModal() {
     this.showRejectionModal = false;
+    this.showFinalRejectionConfirm = false;
     this.rejectionReason = '';
   }
 
@@ -231,6 +241,13 @@ export class DecisionComponent implements OnInit {
     // If changing to Rejected, show modal for rejection reason
     if (status === 'Rejected') {
       this.showRejectionModal = true;
+      return;
+    }
+
+    // Under Review or Approved use a centered custom confirmation modal
+    if (status === 'UnderReview' || status === 'Approved') {
+      this.pendingStatus = status;
+      this.showStatusConfirm = true;
       return;
     }
 
@@ -268,10 +285,27 @@ export class DecisionComponent implements OnInit {
           }
 
           this.showRejectionModal = false;
+          this.showFinalRejectionConfirm = false;
           this.rejectionReason = '';
+          this.showStatusConfirm = false;
+          this.pendingStatus = null;
 
           // Reload ideas to reflect changes
           this.loadIdeasForReview();
+
+          // Refresh review history after status change (to show rejection feedback)
+          if (this.selected) {
+            this.reviewService
+              .getReviewsForIdea(this.selected.ideaID)
+              .subscribe({
+                next: (reviews: Review[]) => {
+                  this.reviews = reviews;
+                },
+                error: (error: any) => {
+                  console.error('Error refreshing reviews:', error);
+                },
+              });
+          }
         },
         error: (error: any) => {
           console.error('Error changing status:', error);
@@ -280,7 +314,54 @@ export class DecisionComponent implements OnInit {
             error.error?.message ||
             'Failed to change status. Please try again.';
           alert(errorMsg);
+          this.showStatusConfirm = false;
+          this.pendingStatus = null;
+          this.showFinalRejectionConfirm = false;
         },
       });
+  }
+
+  confirmPendingStatus() {
+    if (this.pendingStatus) {
+      this.performStatusChange(this.pendingStatus);
+    }
+  }
+
+  closeStatusConfirm() {
+    if (this.isChangingStatus) return;
+    this.showStatusConfirm = false;
+    this.pendingStatus = null;
+  }
+
+  openFinalRejectionConfirm() {
+    if (!this.rejectionReason.trim() || this.isChangingStatus) return;
+    this.showFinalRejectionConfirm = true;
+  }
+
+  cancelFinalRejectionConfirm() {
+    if (this.isChangingStatus) return;
+    this.showFinalRejectionConfirm = false;
+  }
+
+  private showError(message: string): void {
+    this.errorMessage = message;
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+    }
+    this.errorTimeout = setTimeout(() => {
+      this.errorMessage = '';
+    }, 4000);
+  }
+
+  private showSuccess(message: string): void {
+    this.successMessage = message;
+    if (this.successTimeout) {
+      clearTimeout(this.successTimeout);
+    }
+    this.cdr.detectChanges();
+    this.successTimeout = setTimeout(() => {
+      this.successMessage = '';
+      this.cdr.detectChanges();
+    }, 3000);
   }
 }

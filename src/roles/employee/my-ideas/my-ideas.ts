@@ -23,6 +23,12 @@ import {
 export class MyIdeas implements OnInit {
   ideas: Idea[] = [];
   filterStatus: 'All' | 'Rejected' | 'UnderReview' | 'Approved' = 'All';
+  statusOptions: Array<'All' | 'UnderReview' | 'Approved' | 'Rejected'> = [
+    'All',
+    'UnderReview',
+    'Approved',
+    'Rejected',
+  ];
 
   selected: Idea | null = null;
   comments: IdeaComment[] = [];
@@ -56,6 +62,10 @@ export class MyIdeas implements OnInit {
   ngOnInit(): void {
     this.loadCurrentUser();
     this.loadMyIdeas();
+  }
+
+  setFilter(status: 'All' | 'UnderReview' | 'Approved' | 'Rejected') {
+    this.filterStatus = status;
   }
 
   loadCurrentUser() {
