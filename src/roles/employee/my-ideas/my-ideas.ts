@@ -87,6 +87,16 @@ export class MyIdeas implements OnInit {
   }
 
   selectIdea(idea: Idea) {
+    if (this.selected?.ideaID === idea.ideaID) {
+      this.selected = null;
+      this.comments = [];
+      this.reviews = [];
+      this.currentUpvoters = [];
+      this.currentDownvoters = [];
+      this.showVotersModal = false;
+      return;
+    }
+
     this.selected = idea;
 
     // Clear previous data

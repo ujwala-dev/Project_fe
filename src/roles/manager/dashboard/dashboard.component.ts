@@ -14,6 +14,13 @@ import { Idea } from '../../../models/model';
 export class DashboardComponent implements OnInit {
   ideas: Idea[] = [];
   isLoading = false;
+  filterStatus: 'All' | 'UnderReview' | 'Approved' | 'Rejected' = 'All';
+  statusOptions: Array<'All' | 'UnderReview' | 'Approved' | 'Rejected'> = [
+    'All',
+    'UnderReview',
+    'Approved',
+    'Rejected',
+  ];
 
   constructor(private ideaService: IdeaService, private reviewService: ReviewService) {}
 
@@ -56,5 +63,14 @@ export class DashboardComponent implements OnInit {
 
   get rejectedIdeas(): number {
     return this.ideas.filter((i) => i.status === 'Rejected').length;
+  }
+
+  get filteredIdeas(): Idea[] {
+    if (this.filterStatus === 'All') return this.ideas;
+    return this.ideas.filter((idea) => idea.status === this.filterStatus);
+  }
+
+  setFilter(status: 'All' | 'UnderReview' | 'Approved' | 'Rejected') {
+    this.filterStatus = status;
   }
 }

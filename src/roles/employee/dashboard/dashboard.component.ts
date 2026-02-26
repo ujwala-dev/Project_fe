@@ -104,6 +104,13 @@ export class DashboardComponent implements OnInit {
   }
 
   selectIdea(idea: Idea) {
+    if (this.selected?.ideaID === idea.ideaID) {
+      this.selected = null;
+      this.comments = [];
+      this.reviews = [];
+      return;
+    }
+
     this.selected = idea;
 
     if (idea.status !== 'UnderReview') {

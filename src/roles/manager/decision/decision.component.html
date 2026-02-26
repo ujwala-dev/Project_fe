@@ -1,322 +1,289 @@
-<div class="container mx-auto px-4 py-8 max-w-7xl pt-20">
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-120px)]">
-    <!-- Sidebar: Ideas List -->
-    <div
-      class="lg:col-span-4 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col"
-    >
-      <div class="p-4 border-b border-gray-100 bg-gray-50">
-        <h2 class="text-lg font-bold text-gray-900 mb-3">Review Ideas</h2>
-        <!-- Status Filter -->
-        <div class="flex gap-2 flex-wrap">
-          <button
-            *ngFor="let status of statusOptions"
-            (click)="filterByStatus(status)"
-            class="px-3 py-1 text-xs font-medium rounded-full transition-colors"
-            [ngClass]="{
-              'bg-indigo-600 text-white': filterStatus === status,
-              'bg-gray-100 text-gray-600 hover:bg-gray-200':
-                filterStatus !== status,
-            }"
-          >
-            {{ status === "UnderReview" ? "Under Review" : status }}
-          </button>
-        </div>
+<div class="relative min-h-screen bg-slate-50">
+  <div class="absolute inset-0 bg-gradient-to-br from-indigo-100/70 via-white to-slate-100 pointer-events-none"></div>
+
+  <div class="container mx-auto max-w-6xl px-4 pt-20 pb-14 relative space-y-8">
+    <!-- Hero (inline, no card) -->
+    <section class="flex flex-col gap-4 pb-4 md:flex-row md:items-center md:justify-between">
+      <div class="space-y-3 max-w-2xl">
+         <h1 class="text-4xl font-black tracking-tight text-gray-900 md:text-5xl">Manager Decision Dashboard</h1>
+        <p class="text-sm md:text-base text-gray-600">
+          Keep the review queue moving with focused context and crisp status controls.
+        </p>
       </div>
 
-      <!-- Loading State -->
-      <div *ngIf="isLoading" class="p-8 text-center">
-        <div
-          class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"
-        ></div>
-        <p class="text-sm text-gray-500 mt-2">Loading ideas...</p>
-      </div>
-
-      <!-- Ideas List -->
-      <div *ngIf="!isLoading" class="overflow-y-auto flex-1 p-2 space-y-2">
-        <div
-          *ngIf="filteredIdeas.length === 0"
-          class="p-8 text-center text-gray-500 text-sm"
-        >
-          No ideas found for "{{ filterStatus }}" status.
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full md:w-auto">
+        <div class="rounded-xl border border-(--blue-100) bg-linear-to-r from-[#2563eb] via-[#3b82f6] to-[#0ea5e9] px-4 py-3 shadow-lg text-white">
+          <p class="text-[10px] uppercase tracking-[0.18em] font-semibold text-white/80">Total ideas</p>
+          <p class="text-2xl font-black">{{ totalIdeasCount }}</p>
+          <p class="text-[11px] text-white/80">Queue</p>
         </div>
-        <div
-          *ngFor="let idea of filteredIdeas"
-          (click)="select(idea)"
-          class="p-4 rounded-xl cursor-pointer transition-all border border-transparent"
-          [ngClass]="{
-            'bg-indigo-50 border-indigo-100 ring-1 ring-indigo-200':
-              selected?.ideaID === idea.ideaID,
-            'hover:bg-gray-50': selected?.ideaID !== idea.ideaID,
-          }"
-        >
-          <div class="flex justify-between items-start mb-1">
-            <span class="font-bold text-sm text-gray-900 line-clamp-1">{{
-              idea.title
-            }}</span>
-            <span
-              class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
-              [ngClass]="{
-                'bg-yellow-100 text-yellow-800': idea.status === 'Rejected',
-                'bg-blue-100 text-blue-800': idea.status === 'UnderReview',
-                'bg-green-100 text-green-800': idea.status === 'Approved',
-              }"
-              >{{ idea.status }}</span
-            >
-          </div>
-          <p class="text-xs text-gray-500 line-clamp-2">
-            {{ idea.description }}
-          </p>
+        <div class="rounded-xl border border-(--blue-100) bg-linear-to-r from-[#2563eb] via-[#3b82f6] to-[#0ea5e9] px-4 py-3 shadow-lg text-white">
+          <p class="text-[10px] uppercase tracking-[0.18em] font-semibold text-white/80">Under review</p>
+          <p class="text-2xl font-black">{{ underReviewCount }}</p>
+          <p class="text-[11px] text-emerald-100">Focus</p>
+        </div>
+        <div class="rounded-xl border border-(--blue-100) bg-linear-to-r from-[#2563eb] via-[#3b82f6] to-[#0ea5e9] px-4 py-3 shadow-lg text-white">
+          <p class="text-[10px] uppercase tracking-[0.18em] font-semibold text-white/80">Approved</p>
+          <p class="text-2xl font-black">{{ approvedCount }}</p>
+          <p class="text-[11px] text-white/80">Ready</p>
+        </div>
+        <div class="rounded-xl border border-(--blue-100) bg-linear-to-r from-[#2563eb] via-[#3b82f6] to-[#0ea5e9] px-4 py-3 shadow-lg text-white">
+          <p class="text-[10px] uppercase tracking-[0.18em] font-semibold text-white/80">Rejected</p>
+          <p class="text-2xl font-black">{{ rejectedCount }}</p>
+          <p class="text-[11px] text-rose-100">Needs clarity</p>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Main Content: Review Panel -->
-    <div class="lg:col-span-8 flex flex-col h-full">
-      <div
-        class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 overflow-y-auto"
-        *ngIf="selected; else noSelection"
-      >
-        <!-- Header -->
-        <div
-          class="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-6"
-        >
-          <h1 class="text-2xl font-extrabold text-gray-900 leading-tight mb-2">
-            {{ selected.title }}
-          </h1>
-          <div class="flex items-center gap-4 text-sm text-gray-600">
-            <div class="flex items-center gap-1.5">
-              <span class="font-medium text-gray-900">Author:</span>
-              <span
-                class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-sm font-semibold"
-                >{{ selected.authorName || "User #" + selected.userID }}</span
-              >
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <!-- Sidebar: Ideas List -->
+      <div class="lg:col-span-4">
+        <div class="rounded-2xl bg-white shadow-xl border border-slate-200/80 overflow-hidden backdrop-blur">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200/80">
+            <div>
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Review queue</p>
+              <h2 class="text-lg font-bold text-slate-900">Ideas to evaluate</h2>
             </div>
-            <div class="w-1 h-1 bg-gray-300 rounded-full"></div>
-            <div class="flex items-center gap-2">
-              <span class="font-medium text-gray-900">Votes:</span>
-              <div>
-                <img src="Like.svg" alt="Like Icon" class="w-4 h-4" />
-              </div>
-              <span class="text-green-600 font-bold">
-                {{ selected.upvotes || 0 }}</span
-              >
-              <div class="ml-1.5">
-                <img src="disLike.svg" alt="disLike Icon" class="w-4 h-4" />
-              </div>
-              <span class="text-red-600 font-bold ml-1">
-                {{ selected.downvotes || 0 }}</span
-              >
-            </div>
-          </div>
-        </div>
-
-        <div class="p-8 space-y-8">
-          <!-- Description -->
-          <div class="prose prose-indigo max-w-none text-gray-700">
-            <h4
-              class="text-sm font-bold text-black uppercase tracking-wide mb-2"
-            >
-              Description
-            </h4>
-            <p class="whitespace-pre-wrap">{{ selected.description }}</p>
+            <span class="inline-flex h-8 min-w-[2.5rem] items-center justify-center rounded-lg bg-indigo-50 text-indigo-700 text-xs font-semibold">
+              {{ filteredIdeas.length }}
+            </span>
           </div>
 
-          <hr class="border-gray-100" />
-
-          <!-- Change Status Section -->
-          <div
-            class="bg-amber-50 rounded-xl p-6 border border-amber-200"
-            *ngIf="canEditStatus"
-          >
-            <h4
-              class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"
-            >
-              <svg
-                class="w-5 h-5 text-amber-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                ></path>
-              </svg>
-              Change Idea Status
-            </h4>
-            <p class="text-sm text-gray-600 mb-4">
-              Current Status:
-              <span class="font-bold text-gray-900">{{ selected.status }}</span>
-            </p>
-            <div class="flex gap-3 flex-wrap">
-              <button
-                (click)="changeStatus('Rejected')"
-                [disabled]="selected.status === 'Rejected' || isChangingStatus"
-                class="px-4 py-2 text-sm font-medium bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Set to Rejected
-              </button>
-              <button
-                (click)="changeStatus('UnderReview')"
-                [disabled]="
-                  selected.status === 'UnderReview' || isChangingStatus
-                "
-                class="px-4 py-2 text-sm font-medium bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Set to Under Review
-              </button>
-              <button
-                (click)="changeStatus('Approved')"
-                [disabled]="selected.status === 'Approved' || isChangingStatus"
-                class="px-4 py-2 text-sm font-medium bg-green-100 text-green-800 rounded-lg hover:bg-green-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                Set to Approved
-              </button>
-            </div>
-          </div>
-
-          <div
-            *ngIf="!canEditStatus"
-            class="bg-gray-100 rounded-xl p-6 border border-gray-200"
-          >
-            <p class="text-sm text-gray-600">
-              <span class="font-bold">Read-only mode:</span> This idea was
-              reviewed by
-              <span class="font-semibold text-gray-900">{{
-                selected.reviewedByName || "Another Manager"
-              }}</span
-              >. Only the reviewer can change the status.
-            </p>
-          </div>
-
-          <!-- Feedback Section -->
-          <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-            <h4
-              class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"
-            >
-              <svg
-                class="w-5 h-5 text-indigo-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                ></path>
-              </svg>
-              Feedback
-            </h4>
-
-            <div class="mb-4">
-              <textarea
-                [(ngModel)]="feedback"
-                rows="3"
-                class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                placeholder="Explain your decision..."
-              ></textarea>
-            </div>
-
+          <!-- Status Filter -->
+          <div class="flex flex-wrap gap-2 px-5 py-3">
             <button
-              (click)="submitFeedback()"
-              [disabled]="!feedback.trim() || isSubmittingFeedback"
-              class="px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+              *ngFor="let status of statusOptions"
+              (click)="filterByStatus(status)"
+              class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-indigo-200 hover:text-indigo-700"
+              [ngClass]="{ 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white border-transparent shadow-md shadow-indigo-200': filterStatus === status }"
             >
-              {{ isSubmittingFeedback ? "Submitting..." : "Submit Feedback" }}
+              {{ status === 'UnderReview' ? 'Under Review' : status }}
             </button>
           </div>
 
-          <!-- History -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Comments -->
-            <div>
-              <h4
-                class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3"
-              >
-                Comments
-              </h4>
-              <div
-                *ngIf="!comments.length"
-                class="text-sm text-gray-400 italic"
-              >
-                No comments yet.
-              </div>
-              <div class="space-y-3">
-                <div
-                  *ngFor="let c of comments"
-                  class="bg-white p-3 rounded-lg border border-gray-100 text-sm"
-                >
-                  <div class="flex justify-between mb-1">
-                    <span class="font-bold text-gray-700">{{
-                      c.userName || "User"
-                    }}</span>
-                    <span class="text-xs text-gray-400">{{
-                      c.createdDate | date: "shortDate"
-                    }}</span>
-                  </div>
-                  <p class="text-gray-600">{{ c.text }}</p>
-                </div>
-              </div>
+          <!-- Loading State -->
+          <div *ngIf="isLoading" class="px-5 py-10 text-center text-sm text-slate-500">
+            <div class="mx-auto h-8 w-8 border-2 border-slate-200 border-t-indigo-500 rounded-full animate-spin"></div>
+            <p class="mt-2">Loading ideas...</p>
+          </div>
+
+          <!-- Ideas List -->
+          <div *ngIf="!isLoading" class="space-y-3 px-3 pb-4 max-h-[70vh] overflow-y-auto">
+            <div *ngIf="filteredIdeas.length === 0" class="px-4 py-10 text-center text-sm text-slate-500 border border-dashed border-slate-200 rounded-xl">
+              No ideas found for "{{ filterStatus }}" status.
             </div>
 
-            <!-- Past Reviews -->
-            <div>
-              <h4
-                class="text-sm font-bold text-gray-500 uppercase tracking-wide mb-3"
-              >
-                Review History
-              </h4>
-              <div *ngIf="!reviews.length" class="text-sm text-gray-400 italic">
-                No previous reviews.
-              </div>
-              <div class="space-y-3">
-                <div
-                  *ngFor="let r of reviews"
-                  class="bg-white p-3 rounded-lg border border-gray-100 text-sm"
-                >
-                  <div class="flex justify-between items-start mb-1">
-                    <span class="font-bold text-gray-900">{{
-                      r.reviewerName || "Manager"
-                    }}</span>
-                  </div>
-                  <p class="text-gray-600">{{ r.feedback }}</p>
-                  <div class="text-[10px] text-gray-400 mt-1 text-right">
-                    {{ r.reviewDate | date: "short" }}
-                  </div>
+            <div
+              *ngFor="let idea of filteredIdeas"
+              (click)="select(idea)"
+              class="rounded-xl border border-slate-200/80 bg-white px-4 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md cursor-pointer"
+              [ngClass]="{ 'border-indigo-300 ring-1 ring-indigo-200 shadow-lg': selected?.ideaID === idea.ideaID }"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                  <p class="text-sm font-semibold text-slate-900 line-clamp-1">{{ idea.title }}</p>
+                  <p class="text-xs text-slate-600 line-clamp-2">{{ idea.description }}</p>
                 </div>
+                <span
+                  class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide border"
+                  [ngClass]="{
+                    'bg-emerald-50 text-emerald-700 border-emerald-200': idea.status === 'Approved',
+                    'bg-rose-50 text-rose-700 border-rose-200': idea.status === 'Rejected',
+                    'bg-indigo-50 text-indigo-700 border-indigo-200': idea.status === 'UnderReview'
+                  }"
+                >
+                  {{ idea.status }}
+                </span>
+              </div>
+              <div class="mt-3 flex items-center gap-2 text-[11px] text-slate-500">
+                <span class="h-1.5 w-1.5 rounded-full bg-indigo-500"></span>
+                <span>Tap to open details</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <ng-template #noSelection>
+      <!-- Main Content: Review Panel -->
+      <div class="lg:col-span-8 flex flex-col h-full">
         <div
-          class="bg-white rounded-2xl shadow-sm border border-gray-100 flex-1 flex flex-col items-center justify-center text-center p-8"
+          class="rounded-2xl bg-white shadow-xl border border-slate-200/80 flex-1 overflow-hidden"
+          *ngIf="selected; else noSelection"
         >
-          <div class="p-4 bg-gray-50 rounded-full mb-4">
-            <svg
-              class="w-12 h-12 text-gray-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-              ></path>
-            </svg>
+          <!-- Header -->
+          <div class="sticky top-0 z-10 border-b border-slate-200/80 bg-white/90 backdrop-blur px-6 py-5 flex items-start justify-between gap-4">
+            <div class="space-y-2">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Currently viewing</p>
+              <h1 class="text-2xl font-black leading-tight text-slate-900">{{ selected.title }}</h1>
+              <div class="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+                <span
+                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wide border"
+                  [ngClass]="{
+                    'bg-emerald-50 text-emerald-700 border-emerald-200': selected.status === 'Approved',
+                    'bg-rose-50 text-rose-700 border-rose-200': selected.status === 'Rejected',
+                    'bg-indigo-50 text-indigo-700 border-indigo-200': selected.status === 'UnderReview'
+                  }"
+                >
+                  {{ selected.status }}
+                </span>
+                <span class="w-2 h-px bg-slate-200"></span>
+                <span class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Author</span>
+                <span class="font-semibold text-indigo-700">{{ selected.authorName || 'User #' + selected.userID }}</span>
+                <span class="w-2 h-px bg-slate-200"></span>
+                <span class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Votes</span>
+                <span class="font-bold text-emerald-600 text-sm">Up {{ selected.upvotes || 0 }}</span>
+                <span class="font-bold text-rose-600 text-sm">Down {{ selected.downvotes || 0 }}</span>
+              </div>
+            </div>
+            <div *ngIf="selected.status !== 'UnderReview'" class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[12px] font-semibold text-slate-700">
+              Reviewed by {{ selected.reviewedByName || 'Manager' }}
+            </div>
           </div>
-          <h3 class="text-lg font-bold text-gray-900">No Idea Selected</h3>
-          <p class="text-gray-500">Pick an idea from the list to review.</p>
+
+          <div class="p-6 space-y-6">
+            <!-- Description -->
+            <div class="rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-3">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="h-2 w-2 rounded-full bg-indigo-500"></span>
+                <h4 class="text-xs font-black uppercase tracking-[0.16em] text-slate-700">Description</h4>
+              </div>
+              <p class="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{{ selected.description }}</p>
+            </div>
+
+            <!-- Change Status Section -->
+            <div
+              class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4"
+              *ngIf="canEditStatus"
+            >
+              <div class="flex items-center gap-2 mb-2">
+                <span class="h-2 w-2 rounded-full bg-amber-500"></span>
+                <h4 class="text-xs font-black uppercase tracking-[0.16em] text-slate-800">Change idea status</h4>
+              </div>
+              <p class="text-sm text-slate-700 mb-3">Current status: <span class="font-bold text-slate-900">{{ selected.status }}</span></p>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  (click)="changeStatus('Rejected')"
+                  [disabled]="selected.status === 'Rejected' || isChangingStatus"
+                  class="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700 hover:bg-rose-100 transition disabled:opacity-50"
+                >
+                  Set to Rejected
+                </button>
+                <button
+                  (click)="changeStatus('UnderReview')"
+                  [disabled]="selected.status === 'UnderReview' || isChangingStatus"
+                  class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 hover:border-indigo-200 hover:text-indigo-700 transition disabled:opacity-50"
+                >
+                  Set to Under Review
+                </button>
+                <button
+                  (click)="changeStatus('Approved')"
+                  [disabled]="selected.status === 'Approved' || isChangingStatus"
+                  class="rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-md shadow-indigo-200 transition hover:shadow-lg disabled:opacity-50"
+                >
+                  Set to Approved
+                </button>
+              </div>
+            </div>
+
+            <div
+              *ngIf="!canEditStatus"
+              class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+            >
+              <p class="text-sm text-slate-700">
+                <span class="font-bold">Read-only mode:</span> This idea was reviewed by
+                <span class="font-semibold text-slate-900">{{ selected.reviewedByName || 'Another Manager' }}</span>.
+                Only the reviewer can change the status.
+              </p>
+            </div>
+
+            <!-- Feedback Section -->
+            <div class="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="h-2 w-2 rounded-full bg-indigo-500"></span>
+                <h4 class="text-xs font-black uppercase tracking-[0.16em] text-slate-800">Feedback</h4>
+              </div>
+
+              <div class="mb-3">
+                <textarea
+                  [(ngModel)]="feedback"
+                  rows="3"
+                  class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                  placeholder="Explain your decision..."
+                ></textarea>
+              </div>
+
+              <button
+                (click)="submitFeedback()"
+                [disabled]="!feedback.trim() || isSubmittingFeedback"
+                class="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-md shadow-indigo-200 transition hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {{ isSubmittingFeedback ? 'Submitting...' : 'Submit Feedback' }}
+              </button>
+            </div>
+
+            <!-- History -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Comments -->
+              <div class="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="h-2 w-2 rounded-full bg-indigo-500"></span>
+                  <h4 class="text-xs font-black uppercase tracking-[0.16em] text-slate-800">Comments</h4>
+                </div>
+                <div *ngIf="!comments.length" class="text-xs text-slate-500">No comments yet.</div>
+                <div class="space-y-3" *ngIf="comments.length">
+                  <div *ngFor="let c of comments" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                    <div class="flex items-center justify-between text-[12px] text-slate-600 mb-1">
+                      <span class="font-semibold text-slate-800">{{ c.userName || 'User' }}</span>
+                      <span>{{ c.createdDate | date: 'shortDate' }}</span>
+                    </div>
+                    <p class="text-sm text-slate-700">{{ c.text }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Past Reviews -->
+              <div class="rounded-xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="h-2 w-2 rounded-full bg-indigo-500"></span>
+                  <h4 class="text-xs font-black uppercase tracking-[0.16em] text-slate-800">Review history</h4>
+                </div>
+                <div *ngIf="!reviews.length" class="text-xs text-slate-500">No previous reviews.</div>
+                <div class="space-y-3" *ngIf="reviews.length">
+                  <div *ngFor="let r of reviews" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                    <div class="flex items-center justify-between text-[12px] text-slate-600 mb-1">
+                      <span class="font-semibold text-slate-800">{{ r.reviewerName || 'Manager' }}</span>
+                      <span>{{ r.reviewDate | date: 'short' }}</span>
+                    </div>
+                    <p class="text-sm text-slate-700">{{ r.feedback }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </ng-template>
+
+        <ng-template #noSelection>
+          <div class="rounded-2xl border border-dashed border-slate-200 bg-white px-6 py-12 text-center text-slate-600 shadow-sm">
+            <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+              <svg
+                class="h-7 w-7"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                ></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900">No idea selected</h3>
+            <p class="text-sm text-slate-600">Pick an idea from the list to review.</p>
+          </div>
+        </ng-template>
+      </div>
     </div>
   </div>
 
@@ -325,41 +292,36 @@
     *ngIf="showRejectionModal"
     class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
   >
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-in">
-      <div class="mb-6">
-        <h3 class="text-2xl font-bold text-gray-900 mb-2">Rejection Reason</h3>
-        <p class="text-gray-600">
-          Please provide a detailed reason for rejecting this idea. This is
-          mandatory.
-        </p>
+    <div class="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-slate-200 p-6" (click)="$event.stopPropagation()">
+      <div class="mb-4">
+        <h3 class="text-xl font-bold text-slate-900">Rejection Reason</h3>
+        <p class="text-sm text-slate-600">Please provide a detailed reason for rejecting this idea. This is mandatory.</p>
       </div>
 
-      <div class="mb-6">
-        <label class="block text-sm font-bold text-gray-700 mb-2"
-          >Reason for Rejection</label
-        >
+      <div class="mb-4">
+        <label class="block text-sm font-bold text-slate-800 mb-2">Reason for rejection</label>
         <textarea
           [(ngModel)]="rejectionReason"
           rows="4"
-          class="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 text-sm"
+          class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-rose-300 focus:outline-none focus:ring-2 focus:ring-rose-100"
           placeholder="Explain why this idea is being rejected..."
         ></textarea>
       </div>
 
-      <div class="flex gap-3">
+      <div class="flex gap-3 justify-end">
         <button
           (click)="closeRejectionModal()"
           [disabled]="isChangingStatus"
-          class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 transition disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           (click)="openFinalRejectionConfirm()"
           [disabled]="!rejectionReason.trim() || isChangingStatus"
-          class="flex-1 px-4 py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          class="rounded-lg bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2 text-sm font-bold text-white shadow-md shadow-rose-200 hover:shadow-lg transition disabled:opacity-50"
         >
-          {{ isChangingStatus ? "Rejecting..." : "Rejection" }}
+          {{ isChangingStatus ? 'Rejecting...' : 'Rejection' }}
         </button>
       </div>
     </div>
@@ -371,38 +333,36 @@
     class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4"
   >
     <div
-      class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-7 space-y-5 border border-gray-100"
+      class="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-slate-200 p-6"
       (click)="$event.stopPropagation()"
     >
       <div class="flex items-start justify-between gap-3">
         <div>
-          <h3 class="text-xl font-bold text-gray-900">Confirm Rejection</h3>
-          <p class="text-sm text-gray-600">
-            Are you sure you want to reject this idea? Reason provided:
-          </p>
-          <p class="mt-2 text-sm text-gray-800 bg-gray-50 rounded-lg p-3 border border-gray-100 whitespace-pre-wrap">
+          <h3 class="text-xl font-bold text-slate-900">Confirm Rejection</h3>
+          <p class="text-sm text-slate-600">Are you sure you want to reject this idea? Reason provided:</p>
+          <p class="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-800 whitespace-pre-wrap">
             {{ rejectionReason }}
           </p>
         </div>
         <button
-          class="text-gray-400 hover:text-gray-600"
+          class="text-slate-400 hover:text-slate-700"
           aria-label="Close"
           (click)="cancelFinalRejectionConfirm()"
         >
-          ✕
+          x
         </button>
       </div>
 
-      <div class="flex justify-end gap-3">
+      <div class="mt-4 flex justify-end gap-3">
         <button
-          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-60"
+          class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 transition disabled:opacity-50"
           (click)="cancelFinalRejectionConfirm()"
           [disabled]="isChangingStatus"
         >
           Cancel
         </button>
         <button
-          class="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-red-600 hover:bg-red-700 shadow-sm disabled:opacity-60"
+          class="rounded-lg bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-2 text-sm font-bold text-white shadow-md shadow-rose-200 hover:shadow-lg transition disabled:opacity-50"
           (click)="performStatusChange('Rejected')"
           [disabled]="isChangingStatus"
         >
@@ -418,15 +378,15 @@
     class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4"
   >
     <div
-      class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-7 space-y-5 border border-gray-100"
+      class="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-slate-200 p-6"
       (click)="$event.stopPropagation()"
     >
       <div class="flex items-start justify-between gap-3">
         <div>
-          <h3 class="text-xl font-bold text-gray-900">
+          <h3 class="text-xl font-bold text-slate-900">
             {{ pendingStatus === 'Approved' ? 'Approve this idea?' : 'Move to Under Review?' }}
           </h3>
-          <p class="text-sm text-gray-600">
+          <p class="text-sm text-slate-600">
             {{
               pendingStatus === 'Approved'
                 ? 'This will approve the idea and record you as the reviewer.'
@@ -435,24 +395,24 @@
           </p>
         </div>
         <button
-          class="text-gray-400 hover:text-gray-600"
+          class="text-slate-400 hover:text-slate-700"
           aria-label="Close"
           (click)="closeStatusConfirm()"
         >
-          ✕
+          x
         </button>
       </div>
 
-      <div class="flex justify-end gap-3">
+      <div class="mt-4 flex justify-end gap-3">
         <button
-          class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 disabled:opacity-60"
+          class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 transition disabled:opacity-50"
           (click)="closeStatusConfirm()"
           [disabled]="isChangingStatus"
         >
           Cancel
         </button>
         <button
-          class="px-5 py-2 rounded-lg text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm disabled:opacity-60"
+          class="rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-md shadow-indigo-200 hover:shadow-lg transition disabled:opacity-50"
           (click)="confirmPendingStatus()"
           [disabled]="isChangingStatus"
         >
@@ -465,16 +425,16 @@
 </div>
 
 <!-- Toasts -->
-<div class="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4 space-y-2 flex-col items-center pointer-events-none">
+<div class="fixed inset-x-0 bottom-6 z-50 flex flex-col items-center px-4 space-y-2 pointer-events-none">
   <div
     *ngIf="successMessage"
-    class="bg-emerald-500 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium pointer-events-auto"
+    class="pointer-events-auto rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-xl"
   >
     {{ successMessage }}
   </div>
   <div
     *ngIf="errorMessage"
-    class="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium pointer-events-auto"
+    class="pointer-events-auto rounded-lg bg-gradient-to-r from-rose-500 to-rose-600 px-4 py-3 text-sm font-semibold text-white shadow-xl"
   >
     {{ errorMessage }}
   </div>
