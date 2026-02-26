@@ -170,28 +170,32 @@ export class DashboardComponent implements OnInit {
   }
 
   getStatusClass(status: string): string {
+    const base =
+      'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border';
     switch (status) {
       case 'Rejected':
-        return 'status-rejected';
+        return `${base} border-red-200 bg-red-50 text-red-700`;
       case 'UnderReview':
-        return 'status-review';
+        return `${base} border-amber-200 bg-amber-50 text-amber-700`;
       case 'Approved':
-        return 'status-approved';
+        return `${base} border-emerald-200 bg-emerald-50 text-emerald-700`;
       default:
-        return '';
+        return `${base} border-slate-200 bg-slate-50 text-slate-600`;
     }
   }
 
   getRoleClass(role: UserRole): string {
+    const base =
+      'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold border';
     switch (role) {
       case UserRole.ADMIN:
-        return 'role-admin';
+        return `${base} border-emerald-200 bg-emerald-50 text-emerald-700`;
       case UserRole.MANAGER:
-        return 'role-manager';
+        return `${base} border-amber-200 bg-amber-50 text-amber-700`;
       case UserRole.EMPLOYEE:
-        return 'role-employee';
+        return `${base} border-blue-200 bg-blue-50 text-blue-700`;
       default:
-        return '';
+        return `${base} border-slate-200 bg-slate-50 text-slate-600`;
     }
   }
 }

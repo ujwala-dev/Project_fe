@@ -42,6 +42,9 @@ export class DecisionComponent implements OnInit {
   ];
   showStatusConfirm = false;
   pendingStatus: 'UnderReview' | 'Approved' | null = null;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
+  toastTimer: any;
 
   get filteredIdeas(): Idea[] {
     if (this.filterStatus === 'All') {
@@ -326,6 +329,12 @@ export class DecisionComponent implements OnInit {
                 },
               });
           }
+
+          const statusLabel =
+            status === 'UnderReview'
+              ? 'Under Review'
+              : status;
+          this.showToast(`Status updated to ${statusLabel}.`, 'success');
         },
         error: (error: any) => {
           console.error('Error changing status:', error);
@@ -337,6 +346,7 @@ export class DecisionComponent implements OnInit {
           this.showStatusConfirm = false;
           this.pendingStatus = null;
           this.showFinalRejectionConfirm = false;
+          this.showToast(errorMsg, 'error');
         },
       });
   }
@@ -383,5 +393,16 @@ export class DecisionComponent implements OnInit {
       this.successMessage = '';
       this.cdr.detectChanges();
     }, 3000);
+  }
+
+  private showToast(message: string, type: 'success' | 'error'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+    }
+    this.toastTimer = setTimeout(() => {
+      this.toastMessage = '';
+    }, 2000);
   }
 }

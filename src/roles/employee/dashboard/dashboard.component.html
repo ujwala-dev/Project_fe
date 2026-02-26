@@ -132,7 +132,7 @@
                 idea.hasVoted ? 'You have already voted on this idea' : 'Upvote'
               "
             >
-              <span class="text-lg">👍</span>
+              <img src="/Like.svg" alt="Upvote" class="w-5 h-5 select-none" />
               <span class="font-bold">{{ idea.upvotes || 0 }}</span>
             </button>
             <button
@@ -149,7 +149,7 @@
                   : 'Downvote'
               "
             >
-              <span class="text-lg">👎</span>
+              <img src="/disLike.svg" alt="Downvote" class="w-5 h-5 rotate-180 select-none" />
               <span class="font-bold">{{ idea.downvotes || 0 }}</span>
             </button>
             <div class="flex items-center gap-2 px-3 py-2 bg-white rounded-xl border border-gray-200 text-sm text-gray-600 shadow-sm">
@@ -379,12 +379,11 @@
   <!-- Toast notification -->
   <div
     *ngIf="toastMessage"
-    class="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-sm font-semibold text-white"
-    [ngClass]="{
-      'bg-green-600': toastType === 'success',
-      'bg-red-600': toastType === 'error',
-      'bg-gray-800': toastType === 'info',
-    }"
+    class="fixed top-20 md:top-24 right-4 md:right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-sm font-semibold text-white transition-transform duration-300 ease-out"
+    [ngClass]="toastType === 'success'
+      ? 'bg-linear-to-r from-[#2563eb] via-[#3b82f6] to-[#0ea5e9]'
+      : 'bg-red-600'"
+    [style.transform]="toastMessage ? 'translateX(0)' : 'translateX(120%)'"
   >
     {{ toastMessage }}
   </div>
