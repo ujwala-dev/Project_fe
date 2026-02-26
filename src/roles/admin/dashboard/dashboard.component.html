@@ -1,191 +1,154 @@
-<div class="p-8 max-w-7xl mx-auto pt-20">
-  <!-- Statistics Cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-    <!-- Users Card -->
-    <div
-      class="bg-white rounded-xl p-6 shadow-sm flex gap-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
-    >
-      <div class="text-5xl shrink-0">
-        <img src="usersSVG.svg" alt="User Icon" class="w-13 h-13" />
-      </div>
-      <div class="flex-1">
-        <h3
-          class="text-sm font-semibold text-gray-500 m-0 mb-2 uppercase tracking-wide"
-        >
-          Total Users
-        </h3>
-        <div class="text-4xl font-bold text-gray-900 m-0 mb-3">
-          {{ totalUsers }}
-        </div>
-        <div class="flex flex-wrap gap-3 text-xs text-gray-400">
-          <span>{{ totalAdmins }} Admins</span>
-          <span>{{ totalManagers }} Managers</span>
-          <span>{{ totalEmployees }} Employees</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Ideas Card -->
-    <div
-      class="bg-white rounded-xl p-6 shadow-sm flex gap-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
-    >
-      <div class="text-5xl shrink-0">
-        <img src="IdeasSVG.svg" alt="Ideas Icon" class="w-13 h-13" />
-      </div>
-      <div class="flex-1">
-        <h3
-          class="text-sm font-semibold text-gray-500 m-0 mb-2 uppercase tracking-wide"
-        >
-          Total Ideas
-        </h3>
-        <div class="text-4xl font-bold text-gray-900 m-0 mb-3">
-          {{ totalIdeas }}
-        </div>
-        <div class="flex flex-wrap gap-3 text-xs text-gray-400">
-          <span>{{ rejectedIdeas }} Rejected</span>
-          <span>{{ underReviewIdeas }} In Review</span>
-          <span>{{ approvedIdeas }} Approved</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Categories Card -->
-    <div
-      class="bg-white rounded-xl p-6 shadow-sm flex gap-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
-    >
-      <div class="text-5xl shrink-0">
-        <img src="CategorySVG.svg" alt="Category Icon" class="w-12 h-12" />
-      </div>
-      <div class="flex-1">
-        <h3
-          class="text-sm font-semibold text-gray-500 m-0 mb-2 uppercase tracking-wide"
-        >
-          Categories
-        </h3>
-        <div class="text-4xl font-bold text-gray-900 m-0 mb-3">
-          {{ totalCategories }}
-        </div>
-        <div class="flex flex-wrap gap-3 text-xs text-gray-400">
-          <span>{{ activeCategories }} Active</span>
-          <span>{{ totalCategories - activeCategories }} Inactive</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Approval Rate Card -->
-    <div
-      class="bg-linear-to-r from-purple-600 to-purple-700 text-white rounded-xl p-6 shadow-sm flex gap-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
-    >
-      <div class="text-5xl shrink-0">
-        <img src="Tick.svg" alt="Tick Icon" class="w-12 h-12" />
-      </div>
-      <div class="flex-1">
-        <h3
-          class="text-sm font-semibold text-white text-opacity-90 m-0 mb-2 uppercase tracking-wide"
-        >
-          Approval Rate
-        </h3>
-        <div class="text-4xl font-bold text-white m-0 mb-3">
-          {{ approvalRate }}%
-        </div>
-        <div class="flex flex-wrap gap-3 text-xs text-white text-opacity-80">
-          <span>{{ approvedIdeas }} of {{ totalIdeas }} ideas approved</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Quick Actions -->
-  <div class="mb-12">
-    <h2 class="text-2xl font-semibold text-gray-900 m-0 mb-4">Quick Actions</h2>
-    <div class="flex gap-4 flex-wrap">
-      <a
-        routerLink="/admin/categories"
-        class="px-6 py-3.5 rounded-lg font-medium cursor-pointer transition-all duration-200 border-none no-underline inline-flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-600"
-      >
-        Manage Categories
-      </a>
-      <a
-        routerLink="/admin/manageusers"
-        class="px-6 py-3.5 rounded-lg font-medium cursor-pointer transition-all duration-200 border-none no-underline inline-flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-600"
-      >
-        Manage Users
-      </a>
-      <a
-        routerLink="/admin/reports"
-        class="px-6 py-3.5 rounded-lg font-medium cursor-pointer transition-all duration-200 border-none no-underline inline-flex items-center gap-2 bg-blue-500 text-white hover:bg-blue-600"
-      >
-        Reports
-      </a>
-    </div>
-  </div>
-
-  <!-- Recent Activity -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <div>
-      <h2 class="text-xl font-semibold text-gray-900 m-0 mb-4">Recent Ideas</h2>
-      <div
-        class="bg-white rounded-xl shadow-sm overflow-hidden"
-        *ngIf="recentIdeas.length > 0; else noIdeas"
-      >
-        <div
-          *ngFor="let idea of recentIdeas"
-          class="flex gap-4 p-4 border-b border-gray-100 transition-colors duration-200 hover:bg-gray-50"
-        >
-          <div class="text-2xl shrink-0">
-            <img src="IdeasSVG.svg" alt="Ideas Icon" class="w-7 h-7" />
+<div class="relative bg-linear-to-br from-(--blue-50) via-white to-(--blue-100) min-h-screen">
+  <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_15%_20%,rgba(37,99,235,0.12),transparent_25%),radial-gradient(circle_at_85%_15%,rgba(14,165,233,0.10),transparent_22%),radial-gradient(circle_at_20%_80%,rgba(59,130,246,0.08),transparent_24%)]"></div>
+  <div class="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 pt-20 space-y-8">
+    <section class="flex flex-col gap-6">
+      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div class="space-y-2">
+          <h1 class="text-4xl font-black tracking-tight text-gray-900 md:text-5xl">Admin Dashboard</h1>
+          <p class="text-gray-600">Monitor users, ideas, and categories at a glance.</p>
+          <div class="flex flex-wrap gap-2 text-xs font-semibold text-(--blue-600)">
+            <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm border border-(--blue-100)">
+              <span class="text-(--blue-500)">Approval Rate</span>
+              <span class="text-gray-900">{{ approvalRate }}%</span>
+            </span>
+            <span class="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 shadow-sm border border-(--blue-100)">
+              <span class="text-(--blue-500)">In Review</span>
+              <span class="text-gray-900">{{ underReviewIdeas }}</span>
+            </span>
           </div>
-          <div class="flex-1 min-w-0">
-            <div
-              class="font-medium text-gray-900 mb-1 overflow-hidden text-ellipsis whitespace-nowrap"
-            >
-              {{ idea.title }}
-            </div>
-            <div class="flex gap-3 items-center text-xs">
-              <span [class]="getStatusClass(idea.status)">{{
-                idea.status
-              }}</span>
-              <span class="text-gray-500">{{
-                idea.submittedDate | date: "short"
-              }}</span>
-            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-3 justify-start md:justify-end">
+          <a
+            routerLink="/admin/manageusers"
+            class="inline-flex items-center gap-2 px-4 py-3 rounded-xl font-semibold text-white shadow-lg bg-linear-to-r from-[#2563eb] via-[#3b82f6] to-[#0ea5e9] hover:brightness-105 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-(--blue-400)"
+          >
+            Manage Users
+          </a>
+          <a
+            routerLink="/admin/categories"
+            class="inline-flex items-center gap-2 px-4 py-3 rounded-xl font-semibold text-white shadow-lg bg-linear-to-r from-[#2563eb] via-[#3b82f6] to-[#0ea5e9] hover:brightness-105 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-(--blue-400)"
+          >
+            Categories
+          </a>
+          <a
+            routerLink="/admin/reports"
+            class="inline-flex items-center gap-2 px-4 py-3 rounded-xl font-semibold text-white shadow-lg bg-linear-to-r from-[#2563eb] via-[#3b82f6] to-[#0ea5e9] hover:brightness-105 transition-all focus:ring-2 focus:ring-offset-2 focus:ring-(--blue-400)"
+          >
+            Reports
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="rounded-2xl border border-(--blue-100) bg-white/90 p-4 shadow-sm backdrop-blur">
+        <div class="flex items-center gap-3">
+          <span class="h-2.5 w-2.5 rounded-full bg-(--blue-500) shadow-[0_0_0_6px_rgba(59,130,246,0.12)]"></span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Total Users</p>
+            <p class="text-2xl font-black text-gray-900">{{ totalUsers }}</p>
+            <p class="text-xs text-gray-500">Admins: {{ totalAdmins }} · Managers: {{ totalManagers }} · Employees: {{ totalEmployees }}</p>
           </div>
         </div>
       </div>
-      <ng-template #noIdeas>
-        <p class="p-8 text-center text-gray-400">No ideas yet</p>
-      </ng-template>
-    </div>
 
-    <div>
-      <h2 class="text-xl font-semibold text-gray-900 m-0 mb-4">Recent Users</h2>
-      <div
-        class="bg-white rounded-xl shadow-sm overflow-hidden"
-        *ngIf="recentUsers.length > 0; else noUsers"
-      >
-        <div
-          *ngFor="let user of recentUsers"
-          class="flex gap-4 p-4 border-b border-gray-100 transition-colors duration-200 hover:bg-gray-50"
-        >
-          <div class="text-2xl shrink-0">
-            <img src="Employee.svg" alt="User Icon" class="w-6 h-6" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <div
-              class="font-medium text-gray-900 mb-1 overflow-hidden text-ellipsis whitespace-nowrap"
-            >
-              {{ user.name }}
-            </div>
-            <div class="flex gap-3 items-center text-xs">
-              <span [class]="getRoleClass(user.role)">{{ user.role }}</span>
-              <span class="text-gray-500">{{ user.department }}</span>
-            </div>
+      <div class="rounded-2xl border border-(--blue-100) bg-white/90 p-4 shadow-sm backdrop-blur">
+        <div class="flex items-center gap-3">
+          <span class="h-2.5 w-2.5 rounded-full bg-blue-400 shadow-[0_0_0_6px_rgba(96,165,250,0.15)]"></span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Total Ideas</p>
+            <p class="text-2xl font-black text-gray-900">{{ totalIdeas }}</p>
+            <p class="text-xs text-gray-500">Rejected: {{ rejectedIdeas }} · In Review: {{ underReviewIdeas }} · Approved: {{ approvedIdeas }}</p>
           </div>
         </div>
       </div>
-      <ng-template #noUsers>
-        <p class="p-8 text-center text-gray-400">No users yet</p>
-      </ng-template>
-    </div>
+
+      <div class="rounded-2xl border border-(--blue-100) bg-white/90 p-4 shadow-sm backdrop-blur">
+        <div class="flex items-center gap-3">
+          <span class="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,0.15)]"></span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Categories</p>
+            <p class="text-2xl font-black text-gray-900">{{ totalCategories }}</p>
+            <p class="text-xs text-gray-500">Active: {{ activeCategories }} · Inactive: {{ totalCategories - activeCategories }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-(--blue-100) bg-white/90 p-4 shadow-sm backdrop-blur">
+        <div class="flex items-center gap-3">
+          <span class="h-2.5 w-2.5 rounded-full bg-purple-500 shadow-[0_0_0_6px_rgba(168,85,247,0.15)]"></span>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.12em] text-gray-500">Approval Rate</p>
+            <p class="text-2xl font-black text-gray-900">{{ approvalRate }}%</p>
+            <p class="text-xs text-gray-500">{{ approvedIdeas }} of {{ totalIdeas }} ideas approved</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid gap-4 lg:grid-cols-2 pb-6">
+      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-lg">
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Pipeline</p>
+            <h2 class="text-xl font-semibold text-slate-900">Recent Ideas</h2>
+          </div>
+          <a routerLink="/admin/reports" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700">View reports</a>
+        </div>
+
+        <div *ngIf="recentIdeas.length > 0; else noIdeas" class="space-y-3">
+          <div
+            *ngFor="let idea of recentIdeas"
+            class="flex items-start gap-3 rounded-lg border border-slate-200/80 bg-slate-50/70 px-3 py-3 transition hover:-translate-y-px hover:bg-white"
+          >
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 ring-1 ring-amber-100">
+              <img src="IdeasSVG.svg" alt="Ideas Icon" class="h-5 w-5" />
+            </div>
+            <div class="min-w-0 space-y-1">
+              <div class="truncate text-sm font-semibold text-slate-900">{{ idea.title }}</div>
+              <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                <span [class]="getStatusClass(idea.status)">{{ idea.status }}</span>
+                <span>{{ idea.submittedDate | date: "short" }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noIdeas>
+          <p class="py-6 text-center text-sm text-slate-500">No ideas yet</p>
+        </ng-template>
+      </div>
+
+      <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-lg">
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">People</p>
+            <h2 class="text-xl font-semibold text-slate-900">Recent Users</h2>
+          </div>
+          <a routerLink="/admin/manageusers" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700">Open user list</a>
+        </div>
+
+        <div *ngIf="recentUsers.length > 0; else noUsers" class="space-y-3">
+          <div
+            *ngFor="let user of recentUsers"
+            class="flex items-start gap-3 rounded-lg border border-slate-200/80 bg-slate-50/70 px-3 py-3 transition hover:-translate-y-px hover:bg-white"
+          >
+            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 ring-1 ring-blue-100">
+              <img src="Employee.svg" alt="User Icon" class="h-5 w-5" />
+            </div>
+            <div class="min-w-0 space-y-1">
+              <div class="truncate text-sm font-semibold text-slate-900">{{ user.name }}</div>
+              <div class="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                <span [class]="getRoleClass(user.role)">{{ user.role }}</span>
+                <span>{{ user.department }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noUsers>
+          <p class="py-6 text-center text-sm text-slate-500">No users yet</p>
+        </ng-template>
+      </div>
+    </section>
   </div>
 </div>

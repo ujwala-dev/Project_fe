@@ -167,6 +167,7 @@ export class DashboardComponent implements OnInit {
           this.ideaService.getCommentsForIdea(this.selected!.ideaID).subscribe({
             next: (comments) => (this.comments = comments),
           });
+          this.showToast('Comment added successfully.', 'success');
         },
         error: (error) => {
           console.error('Error adding comment:', error);
