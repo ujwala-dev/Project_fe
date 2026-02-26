@@ -1,164 +1,394 @@
 <div class="p-8 max-w-7xl mx-auto pt-20">
+
+  <!-- ══════ Header ══════ -->
   <div class="mb-8">
     <h2 class="text-3xl font-bold text-gray-800 m-0 mb-2">System Reports</h2>
-    <p class="text-gray-500 text-base m-0">
-      Analytics and insights across all categories
-    </p>
+    <p class="text-gray-500 text-base m-0">Analytics and insights across all categories</p>
   </div>
 
-  <!-- Overall Statistics Cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-    <div
-      class="bg-linear-to-br from-blue-500 to-blue-400 text-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow"
-    >
-      <h3
-        class="text-sm font-semibold text-white text-opacity-90 m-0 mb-2 uppercase tracking-wide"
-      >
-        Total Ideas
-      </h3>
-      <div class="text-4xl font-bold m-0">{{ totalIdeas }}</div>
+  <!-- ══════ Summary Cards (always visible) ══════ -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="bg-linear-to-br from-blue-500 to-blue-400 text-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
+      <h3 class="text-sm font-semibold text-white/90 m-0 mb-2 uppercase tracking-wide">Total Ideas</h3>
+      <div class="text-4xl font-bold m-0" *ngIf="!loadingOverview">{{ totalIdeas }}</div>
+      <div class="h-10 flex items-center" *ngIf="loadingOverview"><div class="w-16 h-6 bg-white/30 rounded animate-pulse"></div></div>
     </div>
-
-    <div
-      class="bg-linear-to-br from-emerald-500 to-emerald-400 text-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow"
-    >
-      <h3
-        class="text-sm font-semibold text-white text-opacity-90 m-0 mb-2 uppercase tracking-wide"
-      >
-        Approved Ideas
-      </h3>
-      <div class="text-4xl font-bold m-0">{{ totalApproved }}</div>
+    <div class="bg-linear-to-br from-emerald-500 to-emerald-400 text-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
+      <h3 class="text-sm font-semibold text-white/90 m-0 mb-2 uppercase tracking-wide">Approved Ideas</h3>
+      <div class="text-4xl font-bold m-0" *ngIf="!loadingOverview">{{ totalApproved }}</div>
+      <div class="h-10 flex items-center" *ngIf="loadingOverview"><div class="w-16 h-6 bg-white/30 rounded animate-pulse"></div></div>
     </div>
-
-    <div
-      class="bg-linear-to-br from-purple-500 to-purple-400 text-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow"
-    >
-      <h3
-        class="text-sm font-semibold text-white text-opacity-90 m-0 mb-2 uppercase tracking-wide"
-      >
-        Total Users
-      </h3>
-      <div class="text-4xl font-bold m-0">{{ totalUsers }}</div>
+    <div class="bg-linear-to-br from-purple-500 to-purple-400 text-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
+      <h3 class="text-sm font-semibold text-white/90 m-0 mb-2 uppercase tracking-wide">Total Users</h3>
+      <div class="text-4xl font-bold m-0" *ngIf="!loadingOverview">{{ totalUsers }}</div>
+      <div class="h-10 flex items-center" *ngIf="loadingOverview"><div class="w-16 h-6 bg-white/30 rounded animate-pulse"></div></div>
     </div>
-
-    <div
-      class="bg-linear-to-br from-amber-500 to-amber-400 text-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow"
-    >
-      <h3
-        class="text-sm font-semibold text-white text-opacity-90 m-0 mb-2 uppercase tracking-wide"
-      >
-        Approval Rate
-      </h3>
-      <div class="text-4xl font-bold m-0">{{ approvalRate }}%</div>
+    <div class="bg-linear-to-br from-amber-500 to-amber-400 text-white rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow">
+      <h3 class="text-sm font-semibold text-white/90 m-0 mb-2 uppercase tracking-wide">Approval Rate</h3>
+      <div class="text-4xl font-bold m-0" *ngIf="!loadingOverview">{{ approvalRate }}%</div>
+      <div class="h-10 flex items-center" *ngIf="loadingOverview"><div class="w-16 h-6 bg-white/30 rounded animate-pulse"></div></div>
     </div>
   </div>
 
-  <!-- Charts Section -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-    <!-- Idea Status Chart -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-      <h3 class="text-xl font-semibold text-gray-900 m-0 mb-4">
-        Idea Status Distribution
-      </h3>
-      <div class="h-80">
-        <canvas id="ideaStatusChart"></canvas>
+  <!-- ══════ Secondary Stats Row ══════ -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4 mb-10" *ngIf="!loadingOverview">
+    <div class="bg-white rounded-lg shadow-sm p-4 text-center border border-gray-100">
+      <p class="text-xs text-gray-400 uppercase tracking-wide m-0 mb-1">Rejected</p>
+      <p class="text-2xl font-bold text-red-500 m-0">{{ totalRejected }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm p-4 text-center border border-gray-100">
+      <p class="text-xs text-gray-400 uppercase tracking-wide m-0 mb-1">Under Review</p>
+      <p class="text-2xl font-bold text-amber-500 m-0">{{ totalUnderReview }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm p-4 text-center border border-gray-100">
+      <p class="text-xs text-gray-400 uppercase tracking-wide m-0 mb-1">Managers</p>
+      <p class="text-2xl font-bold text-indigo-500 m-0">{{ totalManagers }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm p-4 text-center border border-gray-100">
+      <p class="text-xs text-gray-400 uppercase tracking-wide m-0 mb-1">Employees</p>
+      <p class="text-2xl font-bold text-blue-500 m-0">{{ totalEmployees }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm p-4 text-center border border-gray-100">
+      <p class="text-xs text-gray-400 uppercase tracking-wide m-0 mb-1">Categories</p>
+      <p class="text-2xl font-bold text-purple-500 m-0">{{ totalCategories }}</p>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm p-4 text-center border border-gray-100">
+      <p class="text-xs text-gray-400 uppercase tracking-wide m-0 mb-1">Active Cat.</p>
+      <p class="text-2xl font-bold text-emerald-500 m-0">{{ activeCategories }}</p>
+    </div>
+  </div>
+
+  <!-- ══════ Tab Navigation ══════ -->
+  <div class="border-b border-gray-200 mb-8">
+    <nav class="flex gap-1 -mb-px">
+      <button
+        (click)="switchTab('overview')"
+        [class]="activeTab === 'overview'
+          ? 'border-b-2 border-blue-500 text-blue-600 font-semibold'
+          : 'text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent'"
+        class="px-5 py-3 text-sm transition-colors"
+      >
+        Overview
+      </button>
+      <button
+        (click)="switchTab('categories')"
+        [class]="activeTab === 'categories'
+          ? 'border-b-2 border-blue-500 text-blue-600 font-semibold'
+          : 'text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent'"
+        class="px-5 py-3 text-sm transition-colors"
+      >
+        Categories
+      </button>
+      <button
+        (click)="switchTab('ideas')"
+        [class]="activeTab === 'ideas'
+          ? 'border-b-2 border-blue-500 text-blue-600 font-semibold'
+          : 'text-gray-500 hover:text-gray-700 hover:border-gray-300 border-b-2 border-transparent'"
+        class="px-5 py-3 text-sm transition-colors"
+      >
+        Latest Ideas
+      </button>
+    </nav>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       TAB 1 — OVERVIEW
+       ══════════════════════════════════════════════════════════════════ -->
+  <div *ngIf="activeTab === 'overview'">
+
+    <!-- Idea Status Distribution + Top Employee Contributions Side by Side -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+
+      <!-- Idea Status Distribution Chart -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-900 m-0 mb-4">Idea Status Distribution</h3>
+        <div *ngIf="loadingStatus" class="h-80 flex items-center justify-center">
+          <div class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        </div>
+        <div class="h-80" *ngIf="!loadingStatus">
+          <canvas id="ideaStatusChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Employee Contributions Chart -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-900 m-0 mb-4">Top Employee Contributions</h3>
+        <div *ngIf="loadingContributions" class="h-80 flex items-center justify-center">
+          <div class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        </div>
+        <div class="h-80" *ngIf="!loadingContributions && employeeContributions.length > 0">
+          <canvas id="contributionsChart"></canvas>
+        </div>
+        <div *ngIf="!loadingContributions && employeeContributions.length === 0" class="h-80 flex items-center justify-center">
+          <p class="text-gray-400">No employee contributions data available</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── User Activity Section ── -->
+    <div class="mb-12">
+      <h3 class="text-2xl font-semibold text-gray-900 m-0 mb-4">User Activity Overview</h3>
+      <div *ngIf="loadingUserActivity" class="flex items-center justify-center py-12 bg-white rounded-lg shadow-md">
+        <div class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+      </div>
+      <div *ngIf="!loadingUserActivity && userActivity" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-blue-500">
+          <p class="text-xs text-gray-400 uppercase tracking-wide m-0 mb-2">Total Active Users</p>
+          <p class="text-3xl font-bold text-gray-800 m-0">{{ userActivity.totalActiveUsers || userActivity.activeUsers || 0 }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-emerald-500">
+          <p class="text-xs text-gray-400 uppercase tracking-wide m-0 mb-2">Users With Ideas</p>
+          <p class="text-3xl font-bold text-gray-800 m-0">{{ userActivity.usersWithIdeas || userActivity.contributingUsers || 0 }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-purple-500">
+          <p class="text-xs text-gray-400 uppercase tracking-wide m-0 mb-2">Avg Ideas Per User</p>
+          <p class="text-3xl font-bold text-gray-800 m-0">{{ userActivity.averageIdeasPerUser || userActivity.avgIdeas || 0 }}</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6 border-t-4 border-amber-500">
+          <p class="text-xs text-gray-400 uppercase tracking-wide m-0 mb-2">Inactive Users</p>
+          <p class="text-3xl font-bold text-gray-800 m-0">{{ userActivity.inactiveUsers || userActivity.totalInactiveUsers || 0 }}</p>
+        </div>
+      </div>
+      <div *ngIf="!loadingUserActivity && !userActivity" class="text-center p-12 bg-white rounded-lg shadow-md">
+        <p class="text-gray-400">No user activity data available</p>
+      </div>
+    </div>
+
+    <!-- ── Employee Leaderboard Table ── -->
+    <div class="mb-12" *ngIf="!loadingContributions && employeeContributions.length > 0">
+      <h3 class="text-2xl font-semibold text-gray-900 m-0 mb-4">Employee Leaderboard</h3>
+      <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="w-full border-collapse">
+          <thead class="bg-purple-50 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-purple-600 uppercase tracking-wide">Rank</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-purple-600 uppercase tracking-wide">Employee</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-purple-600 uppercase tracking-wide">Ideas Submitted</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let emp of employeeContributions; let i = index" class="hover:bg-purple-50 transition-colors border-b border-gray-100">
+              <td class="px-4 py-4 text-sm">
+                <span class="w-7 h-7 inline-flex items-center justify-center rounded-full text-xs font-bold text-white"
+                  [ngClass]="{
+                    'bg-yellow-400': i === 0,
+                    'bg-gray-400': i === 1,
+                    'bg-amber-600': i === 2,
+                    'bg-gray-300': i > 2
+                  }">{{ i + 1 }}</span>
+              </td>
+              <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ emp.employeeName || emp.userName || emp.name || 'Unknown' }}</td>
+              <td class="px-4 py-4 text-sm text-gray-600">
+                <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">{{ emp.ideasSubmitted || emp.totalIdeas || emp.count || 0 }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <!-- Category Distribution Chart -->
-  <div class="bg-white rounded-lg shadow-md p-6 mb-12">
-    <h3 class="text-xl font-semibold text-gray-900 m-0 mb-4">
-      Category Distribution
-    </h3>
-    <div class="h-96 flex justify-center">
-      <div class="w-full max-w-md">
-        <canvas id="categoryChart"></canvas>
+  <!-- ══════════════════════════════════════════════════════════════════
+       TAB 2 — CATEGORIES
+       ══════════════════════════════════════════════════════════════════ -->
+  <div *ngIf="activeTab === 'categories'">
+
+    <!-- Top Categories + Category Distribution Side by Side -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+
+      <!-- Category Distribution Pie Chart -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-900 m-0 mb-4">Category Distribution</h3>
+        <div *ngIf="loadingCategories" class="h-80 flex items-center justify-center">
+          <div class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        </div>
+        <div class="h-80 flex justify-center" *ngIf="!loadingCategories && categoryReports.length > 0">
+          <div class="w-full max-w-md">
+            <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+        <div *ngIf="!loadingCategories && categoryReports.length === 0" class="h-80 flex items-center justify-center">
+          <p class="text-gray-400">No category data available</p>
+        </div>
+      </div>
+
+      <!-- Top Categories List -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-xl font-semibold text-gray-900 m-0 mb-4">Top Categories</h3>
+        <div *ngIf="loadingTopCategories" class="flex items-center justify-center py-12">
+          <div class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        </div>
+        <div *ngIf="!loadingTopCategories && topCategories.length > 0">
+          <div *ngFor="let cat of topCategories; let i = index"
+            class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50 px-2 rounded transition-colors"
+            (click)="loadCategoryDetail(cat.categoryID)">
+            <div class="flex items-center gap-3">
+              <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                [ngClass]="{
+                  'bg-blue-500': i === 0,
+                  'bg-blue-400': i === 1,
+                  'bg-blue-300': i === 2,
+                  'bg-gray-300': i > 2
+                }">{{ i + 1 }}</span>
+              <span class="text-sm font-medium text-gray-800">{{ cat.categoryName }}</span>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full font-semibold">{{ cat.ideasSubmitted }} ideas</span>
+              <span class="text-xs px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full font-semibold">{{ cat.approvalRate }}%</span>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="!loadingTopCategories && topCategories.length === 0" class="py-12 text-center">
+          <p class="text-gray-400">No top categories data</p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Category Table -->
-  <div class="mb-12">
-    <h3 class="text-2xl font-semibold text-gray-900 m-0 mb-4">
-      Category Details
-    </h3>
-    <div
-      class="bg-white rounded-lg shadow-md overflow-hidden"
-      *ngIf="categoryReports.length > 0; else noCatData"
-    >
-      <table class="w-full border-collapse">
-        <thead class="bg-blue-50 border-b border-gray-200">
-          <tr>
-            <th
-              class="px-4 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wide"
-            >
-              Category
-            </th>
-            <th
-              class="px-4 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wide"
-            >
-              Ideas Submitted
-            </th>
-            <th
-              class="px-4 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wide"
-            >
-              Approved
-            </th>
-            <th
-              class="px-4 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wide"
-            >
-              Approval Rate
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            *ngFor="let report of categoryReports"
-            class="hover:bg-blue-50 transition-colors border-b border-gray-100"
-          >
-            <td class="px-4 py-4 text-sm font-medium text-gray-900">
-              {{ report.categoryName }}
-            </td>
-            <td class="px-4 py-4 text-sm text-gray-600">
-              <span
-                class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold"
-              >
-                {{ report.ideasSubmitted }}
-              </span>
-            </td>
-            <td class="px-4 py-4 text-sm text-gray-600">
-              <span
-                class="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold"
-              >
-                {{ report.approvedIdeas }}
-              </span>
-            </td>
-            <td class="px-4 py-4 text-sm text-gray-600">
-              <div class="flex items-center gap-2">
-                <div
-                  class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden"
-                >
-                  <div
-                    class="bg-blue-500 h-full transition-all"
-                    [style.width.%]="report.approvalRate"
-                  ></div>
+    <!-- Full Category Table -->
+    <div class="mb-12">
+      <h3 class="text-2xl font-semibold text-gray-900 m-0 mb-4">All Category Details</h3>
+      <div *ngIf="loadingCategories" class="flex items-center justify-center py-12 bg-white rounded-lg shadow-md">
+        <div class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md overflow-hidden" *ngIf="!loadingCategories && categoryReports.length > 0">
+        <table class="w-full border-collapse">
+          <thead class="bg-blue-50 border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wide">Category</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wide">Submitted</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wide">Approved</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wide">Rejected</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wide">Under Review</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wide">Approval Rate</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-blue-600 uppercase tracking-wide">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let report of categoryReports" class="hover:bg-blue-50 transition-colors border-b border-gray-100">
+              <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ report.categoryName }}</td>
+              <td class="px-4 py-4 text-sm text-gray-600">
+                <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">{{ report.ideasSubmitted }}</span>
+              </td>
+              <td class="px-4 py-4 text-sm text-gray-600">
+                <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">{{ report.approvedIdeas }}</span>
+              </td>
+              <td class="px-4 py-4 text-sm text-gray-600">
+                <span class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">{{ report.rejectedIdeas }}</span>
+              </td>
+              <td class="px-4 py-4 text-sm text-gray-600">
+                <span class="inline-block px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-semibold">{{ report.underReviewIdeas }}</span>
+              </td>
+              <td class="px-4 py-4 text-sm text-gray-600">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div class="bg-blue-500 h-full transition-all" [style.width.%]="report.approvalRate"></div>
+                  </div>
+                  <span class="text-xs font-semibold text-blue-600 min-w-12 text-right">{{ report.approvalRate }}%</span>
                 </div>
-                <span
-                  class="text-xs font-semibold text-blue-600 min-w-12 text-right"
-                >
-                  {{ report.approvalRate }}%
-                </span>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <ng-template #noCatData>
-      <div class="text-center p-12 bg-white rounded-lg shadow-md">
+              </td>
+              <td class="px-4 py-4 text-sm">
+                <button (click)="loadCategoryDetail(report.categoryID)" class="text-blue-500 hover:text-blue-700 text-xs font-semibold underline">
+                  View
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="!loadingCategories && categoryReports.length === 0" class="text-center p-12 bg-white rounded-lg shadow-md">
         <p class="text-gray-400">No category data available</p>
       </div>
-    </ng-template>
+    </div>
+
+    <!-- Category Detail Modal -->
+    <div *ngIf="selectedCategoryReport" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" (click)="closeCategoryDetail()">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4" (click)="$event.stopPropagation()">
+        <div class="flex justify-between items-start mb-6">
+          <h3 class="text-2xl font-bold text-gray-800 m-0">{{ selectedCategoryReport.categoryName }}</h3>
+          <button (click)="closeCategoryDetail()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+        </div>
+        <div *ngIf="loadingCategoryDetail" class="flex items-center justify-center py-12">
+          <div class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        </div>
+        <div *ngIf="!loadingCategoryDetail" class="grid grid-cols-2 gap-4">
+          <div class="bg-blue-50 rounded-lg p-4 text-center">
+            <p class="text-xs text-gray-500 uppercase tracking-wide m-0 mb-1">Total Ideas</p>
+            <p class="text-2xl font-bold text-blue-600 m-0">{{ selectedCategoryReport.ideasSubmitted }}</p>
+          </div>
+          <div class="bg-emerald-50 rounded-lg p-4 text-center">
+            <p class="text-xs text-gray-500 uppercase tracking-wide m-0 mb-1">Approved</p>
+            <p class="text-2xl font-bold text-emerald-600 m-0">{{ selectedCategoryReport.approvedIdeas }}</p>
+          </div>
+          <div class="bg-red-50 rounded-lg p-4 text-center">
+            <p class="text-xs text-gray-500 uppercase tracking-wide m-0 mb-1">Rejected</p>
+            <p class="text-2xl font-bold text-red-600 m-0">{{ selectedCategoryReport.rejectedIdeas }}</p>
+          </div>
+          <div class="bg-amber-50 rounded-lg p-4 text-center">
+            <p class="text-xs text-gray-500 uppercase tracking-wide m-0 mb-1">Under Review</p>
+            <p class="text-2xl font-bold text-amber-600 m-0">{{ selectedCategoryReport.underReviewIdeas }}</p>
+          </div>
+          <div class="col-span-2 bg-gray-50 rounded-lg p-4 text-center">
+            <p class="text-xs text-gray-500 uppercase tracking-wide m-0 mb-1">Approval Rate</p>
+            <div class="flex items-center justify-center gap-3">
+              <div class="flex-1 max-w-xs bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div class="bg-blue-500 h-full transition-all" [style.width.%]="selectedCategoryReport.approvalRate"></div>
+              </div>
+              <span class="text-2xl font-bold text-blue-600">{{ selectedCategoryReport.approvalRate }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       TAB 3 — LATEST IDEAS
+       ══════════════════════════════════════════════════════════════════ -->
+  <div *ngIf="activeTab === 'ideas'">
+    <div class="mb-12">
+      <h3 class="text-2xl font-semibold text-gray-900 m-0 mb-4">Latest Ideas</h3>
+      <div *ngIf="loadingLatestIdeas" class="flex items-center justify-center py-12 bg-white rounded-lg shadow-md">
+        <div class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+      </div>
+
+      <div *ngIf="!loadingLatestIdeas && latestIdeas.length > 0" class="space-y-4">
+        <div *ngFor="let idea of latestIdeas"
+          class="bg-white rounded-lg shadow-md p-6 border-l-4 hover:shadow-lg transition-shadow"
+          [ngClass]="{
+            'border-emerald-500': idea.status === 'Approved',
+            'border-red-500': idea.status === 'Rejected',
+            'border-amber-500': idea.status === 'UnderReview'
+          }">
+          <div class="flex flex-col sm:flex-row justify-between items-start gap-3">
+            <div class="flex-1">
+              <h4 class="text-lg font-semibold text-gray-800 m-0 mb-1">{{ idea.title }}</h4>
+              <p class="text-sm text-gray-500 m-0 mb-2 line-clamp-2">{{ idea.description }}</p>
+              <div class="flex flex-wrap items-center gap-3 text-xs text-gray-400">
+                <span *ngIf="idea.authorName">
+                  <span class="font-medium text-gray-600">By:</span> {{ idea.authorName }}
+                </span>
+                <span *ngIf="idea.category">
+                  <span class="font-medium text-gray-600">Category:</span> {{ idea.category }}
+                </span>
+                <span *ngIf="idea.submittedDate">
+                  <span class="font-medium text-gray-600">Date:</span> {{ idea.submittedDate | date: 'mediumDate' }}
+                </span>
+              </div>
+            </div>
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
+              [ngClass]="getStatusColor(idea.status)">
+              {{ idea.status }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!loadingLatestIdeas && latestIdeas.length === 0" class="text-center p-12 bg-white rounded-lg shadow-md">
+        <p class="text-gray-400">No recent ideas found</p>
+      </div>
+    </div>
+  </div>
+
 </div>
