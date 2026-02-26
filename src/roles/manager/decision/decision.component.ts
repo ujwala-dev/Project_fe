@@ -50,6 +50,26 @@ export class DecisionComponent implements OnInit {
     return this.ideas.filter((idea) => idea.status === this.filterStatus);
   }
 
+  get totalIdeasCount(): number {
+    return this.ideas.length;
+  }
+
+  get underReviewCount(): number {
+    return this.countByStatus('UnderReview');
+  }
+
+  get approvedCount(): number {
+    return this.countByStatus('Approved');
+  }
+
+  get rejectedCount(): number {
+    return this.countByStatus('Rejected');
+  }
+
+  private countByStatus(status: 'UnderReview' | 'Approved' | 'Rejected'): number {
+    return this.ideas.filter((idea) => idea.status === status).length;
+  }
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
