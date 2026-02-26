@@ -22,6 +22,11 @@ export class CategoryFormComponent implements OnInit {
     isActive: true,
   };
 
+  toastMessage = '';
+  toastType: 'success' | 'error' | 'info' = 'success';
+  toastTimer: any;
+  toastOffset = 72;
+
   constructor(private categoryService: CategoryService) {}
 
   ngOnInit(): void {
@@ -36,7 +41,7 @@ export class CategoryFormComponent implements OnInit {
 
   onSubmit(): void {
     if (!this.formData.name.trim()) {
-      alert('Category name is required');
+      this.showToast('Category name is required', 'error');
       return;
     }
 
@@ -50,7 +55,7 @@ export class CategoryFormComponent implements OnInit {
           },
           error: (error) => {
             console.error('Error updating category:', error);
-            alert('Failed to update category. Please try again.');
+            this.showToast('Failed to update category. Please try again.', 'error');
           },
         });
     } else {
@@ -67,7 +72,7 @@ export class CategoryFormComponent implements OnInit {
             error.error ||
             error.message ||
             'Failed to create category. Please try again.';
-          alert(`Error: ${errorMsg}`);
+          this.showToast(`Error: ${errorMsg}`, 'error');
         },
       });
     }
@@ -75,5 +80,17 @@ export class CategoryFormComponent implements OnInit {
 
   onCancel(): void {
     this.cancelled.emit();
+  }
+
+  private showToast(
+    message: string,
+    type: 'success' | 'error' | 'info' = 'success',
+  ): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
+      this.toastMessage = '';
+    }, 2600);
   }
 }

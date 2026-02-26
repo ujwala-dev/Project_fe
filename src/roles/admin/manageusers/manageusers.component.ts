@@ -27,10 +27,10 @@ export class ManageusersComponent implements OnInit {
   targetUser: User | null = null;
   targetStatus: 'Active' | 'Inactive' | null = null;
   isUpdatingStatus = false;
-  successMessage = '';
-  errorMessage = '';
-  private successTimeout: any;
-  private errorTimeout: any;
+  toastMessage = '';
+  toastType: 'success' | 'error' | 'info' = 'success';
+  toastTimer: any;
+  toastOffset = 72;
 
   // Filter options
   filterRole: UserRole | 'All' = 'All';
@@ -54,6 +54,7 @@ export class ManageusersComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading users:', error);
+        this.showToast('Failed to load users. Please try again.', 'error');
         this.isLoading = false;
       },
     });
@@ -66,6 +67,7 @@ export class ManageusersComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading statistics:', error);
+        this.showToast('Unable to load stats right now.', 'error');
       },
     });
   }
@@ -142,10 +144,11 @@ export class ManageusersComponent implements OnInit {
         this.loadUsers();
         this.loadStatistics();
         this.cancelStatusConfirm(true);
-        this.showSuccess(
+        this.showToast(
           statusToApply === 'Active'
             ? 'User activated successfully'
             : 'User deactivated successfully',
+          'success',
         );
       },
       error: (error) => {
@@ -154,13 +157,17 @@ export class ManageusersComponent implements OnInit {
           error.status === 400 &&
           error.error?.message?.includes('deactivate your own')
         ) {
-          this.showError('You cannot deactivate your own account.');
+          this.showToast('You cannot deactivate your own account.', 'error');
         } else if (error.status === 400 && error.error?.message?.includes('last admin')) {
-          this.showError(
+          this.showToast(
             'Cannot deactivate the last active admin. Please ensure at least one admin remains active.',
+            'error',
           );
         } else {
-          this.showError('Cannot deactivate the last active admin. Please ensure at least one admin remains active.');
+          this.showToast(
+            'Cannot deactivate the last active admin. Please ensure at least one admin remains active.',
+            'error',
+          );
         }
         this.isUpdatingStatus = false;
         this.cancelStatusConfirm(true);
@@ -176,10 +183,11 @@ export class ManageusersComponent implements OnInit {
       next: () => {
         this.loadUsers();
         this.loadStatistics();
+        this.showToast('User activated successfully', 'success');
       },
       error: (error) => {
         console.error('Error activating user:', error);
-        alert('Failed to activate user. Please try again.');
+        this.showToast('Failed to activate user. Please try again.', 'error');
       },
     });
   }
@@ -197,9 +205,9 @@ export class ManageusersComponent implements OnInit {
             error.status === 400 &&
             error.error?.message?.includes('deactivate your own')
           ) {
-            alert('You cannot deactivate your own account!');
+            this.showToast('You cannot deactivate your own account!', 'error');
           } else {
-            alert('Failed to deactivate user. Please try again.');
+            this.showToast('Failed to deactivate user. Please try again.', 'error');
           }
         },
       });
@@ -214,7 +222,7 @@ export class ManageusersComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading user details:', error);
-        alert('Failed to load user details. Please try again.');
+        this.showToast('Failed to load user details. Please try again.', 'error');
       },
     });
   }
@@ -243,23 +251,15 @@ export class ManageusersComponent implements OnInit {
       : 'bg-red-100 text-red-800';
   }
 
-  private showSuccess(message: string): void {
-    this.successMessage = message;
-    if (this.successTimeout) {
-      clearTimeout(this.successTimeout);
-    }
-    this.successTimeout = setTimeout(() => {
-      this.successMessage = '';
-    }, 3000);
-  }
-
-  private showError(message: string): void {
-    this.errorMessage = message;
-    if (this.errorTimeout) {
-      clearTimeout(this.errorTimeout);
-    }
-    this.errorTimeout = setTimeout(() => {
-      this.errorMessage = '';
-    }, 4000);
+  private showToast(
+    message: string,
+    type: 'success' | 'error' | 'info' = 'success',
+  ): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
+      this.toastMessage = '';
+    }, 2600);
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { Category } from '../models/model';
 import { HttpClient } from '@angular/common/http';
 import { tap } from 'rxjs/operators';
@@ -96,24 +96,18 @@ export class CategoryService {
       }),
     );
   }
-  toggleCategoryStatus(id: number | string): void {
+  toggleCategoryStatus(id: number | string): Observable<any> {
     const category = this.getCategoryById(id);
-    if (category) {
-      const updatedData = {
-        name: category.name,
-        description: category.description,
-        isActive: !category.isActive,
-      };
-
-      this.updateCategory(id, updatedData).subscribe({
-        next: () => {
-          console.log('Category status toggled successfully');
-        },
-        error: (error) => {
-          console.error('Error toggling category status:', error);
-          alert('Failed to toggle category status. Please try again.');
-        },
-      });
+    if (!category) {
+      return throwError(() => new Error('Category not found'));
     }
+
+    const updatedData = {
+      name: category.name,
+      description: category.description,
+      isActive: !category.isActive,
+    };
+
+    return this.updateCategory(id, updatedData);
   }
 }

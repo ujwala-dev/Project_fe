@@ -27,8 +27,9 @@ export class CreateideaComponent implements OnInit {
   currentUserId = 0;
   // Toast state
   toastMessage = '';
-  toastType: 'success' | 'error' = 'success';
+  toastType: 'success' | 'error' | 'info' = 'success';
   toastTimer: any;
+  toastOffset = 72;
 
   constructor(
     private fb: FormBuilder,
@@ -138,7 +139,7 @@ export class CreateideaComponent implements OnInit {
     });
   }
 
-  private showToast(message: string, type: 'success' | 'error') {
+  private showToast(message: string, type: 'success' | 'error' | 'info') {
     this.toastMessage = message;
     this.toastType = type;
     clearTimeout(this.toastTimer);

@@ -16,8 +16,10 @@ export class CategoryListComponent implements OnInit {
   categories: Category[] = [];
   showForm = false;
   editingCategory: Category | null = null;
-  successMessage = '';
-  private successTimeout: any;
+  toastMessage = '';
+  toastType: 'success' | 'error' | 'info' = 'success';
+  toastTimer: any;
+  toastOffset = 72;
   showDeleteConfirm = false;
   categoryToDelete: Category | null = null;
   isDeleting = false;
@@ -46,10 +48,24 @@ export class CategoryListComponent implements OnInit {
   }
 
   toggleStatus(category: Category): void {
-    this.categoryService.toggleCategoryStatus(category.categoryID);
+    const targetStatus = category.isActive ? 'deactivated' : 'activated';
+    this.categoryService.toggleCategoryStatus(category.categoryID).subscribe({
+      next: () => {
+        this.showToast(`Category ${targetStatus} successfully`, 'success');
+      },
+      error: (error) => {
+        console.error('Error toggling category status:', error);
+        this.showToast('Failed to toggle category status. Please try again.', 'error');
+      },
+    });
   }
 
   promptDelete(category: Category): void {
+    if (this.categories.length <= 1) {
+      this.showToast('You must keep at least one category.', 'error');
+      return;
+    }
+
     this.categoryToDelete = category;
     this.showDeleteConfirm = true;
   }
@@ -69,10 +85,11 @@ export class CategoryListComponent implements OnInit {
       next: () => {
         // Category list will be updated automatically via the service
         this.cancelDelete();
+        this.showToast('Category deleted successfully', 'success');
       },
       error: (error) => {
         console.error('Error deleting category:', error);
-        alert('Failed to delete category. Please try again.');
+        this.showToast('Failed to delete category. Please try again.', 'error');
       },
       complete: () => {
         this.isDeleting = false;
@@ -83,16 +100,21 @@ export class CategoryListComponent implements OnInit {
   onFormSaved(): void {
     const wasEdit = !!this.editingCategory;
     this.closeForm();
-    this.showSuccess(wasEdit ? 'Category updated successfully' : 'Category created successfully');
+    this.showToast(
+      wasEdit ? 'Category updated successfully' : 'Category created successfully',
+      'success',
+    );
   }
 
-  private showSuccess(message: string): void {
-    this.successMessage = message;
-    if (this.successTimeout) {
-      clearTimeout(this.successTimeout);
-    }
-    this.successTimeout = setTimeout(() => {
-      this.successMessage = '';
-    }, 3000);
+  private showToast(
+    message: string,
+    type: 'success' | 'error' | 'info' = 'success',
+  ): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
+      this.toastMessage = '';
+    }, 2600);
   }
 }

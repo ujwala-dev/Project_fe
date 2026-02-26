@@ -1,5 +1,21 @@
 <div class="relative bg-linear-to-br from-(--blue-50) via-white to-(--blue-100) min-h-screen">
   <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_12%_18%,rgba(37,99,235,0.12),transparent_25%),radial-gradient(circle_at_85%_12%,rgba(14,165,233,0.10),transparent_22%),radial-gradient(circle_at_25%_78%,rgba(59,130,246,0.08),transparent_24%)]"></div>
+  <!-- Toast -->
+  <div
+    *ngIf="toastMessage"
+    class="app-toast"
+    [ngClass]="[
+      'show',
+      toastType === 'success'
+        ? 'app-toast--success'
+        : toastType === 'info'
+        ? 'app-toast--info'
+        : 'app-toast--error'
+    ]"
+      [style.top.px]="toastOffset"
+  >
+    {{ toastMessage }}
+  </div>
   <div class="relative container mx-auto px-4 py-8 max-w-6xl pt-20 pb-16">
     <!-- Header & Filter -->
     <div class="flex flex-col gap-6 mb-8">
@@ -205,7 +221,7 @@
             <!-- Delete button - only for Rejected or UnderReview -->
             <button
               *ngIf="idea.status === 'Rejected' || idea.status === 'UnderReview'"
-              (click)="deleteIdea(idea)"
+              (click)="openDeleteModal(idea)"
               class="text-sm font-medium text-red-500 hover:text-red-700 hover:underline flex items-center gap-1"
               title="Delete idea"
             >
@@ -382,6 +398,58 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<div
+  *ngIf="showDeleteModal"
+  class="fixed inset-0 z-50 flex items-center justify-center p-4"
+>
+  <div
+    class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+    (click)="closeDeleteModal()"
+  ></div>
+  <div
+    class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-(--blue-100) animate-fade-in"
+  >
+    <div class="absolute inset-x-0 top-0 h-1.5 bg-linear-to-r from-(--blue-400) via-(--blue-500) to-(--blue-600)"></div>
+    <div class="p-6 sm:p-7">
+      <div class="flex items-start gap-3">
+        <div class="w-11 h-11 rounded-full bg-red-50 border border-red-100 flex items-center justify-center text-red-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m0 4h.01M5.07 6.93a10 10 0 1113.86 0L12 3 5.07 6.93z" />
+          </svg>
+        </div>
+        <div class="space-y-1">
+          <h3 class="text-xl font-bold text-gray-900">Delete this idea?</h3>
+          <p class="text-gray-600 leading-relaxed">
+            "{{ pendingDelete?.title }}" will be permanently removed. This action cannot be undone.
+          </p>
+        </div>
+      </div>
+
+      <div *ngIf="deleteError" class="mt-4 px-4 py-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+        {{ deleteError }}
+      </div>
+
+      <div class="mt-6 flex flex-col sm:flex-row sm:justify-end gap-3">
+        <button
+          (click)="closeDeleteModal()"
+          [disabled]="isDeleting"
+          class="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-colors disabled:opacity-60"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="confirmDelete()"
+          [disabled]="isDeleting"
+          class="px-5 py-2.5 rounded-xl font-bold text-white bg-linear-to-r from-red-500 via-red-600 to-red-700 shadow-lg hover:brightness-105 transition-all disabled:opacity-60"
+        >
+          {{ isDeleting ? 'Deleting...' : 'Yes, delete it' }}
+        </button>
       </div>
     </div>
   </div>

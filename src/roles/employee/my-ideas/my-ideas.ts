@@ -37,6 +37,16 @@ export class MyIdeas implements OnInit {
   currentUser: User | null = null;
   isLoading = true;
 
+  // Toast + delete modal state
+  toastMessage = '';
+  toastType: 'success' | 'error' | 'info' = 'success';
+  toastTimer: any;
+  toastOffset = 72;
+  showDeleteModal = false;
+  pendingDelete: Idea | null = null;
+  isDeleting = false;
+  deleteError = '';
+
   // Map to store voters for each idea separately
   votersMap: Map<number | string, { upvoters: any[]; downvoters: any[] }> =
     new Map();
@@ -220,32 +230,43 @@ export class MyIdeas implements OnInit {
     this.showVotersModal = false;
   }
 
-  deleteIdea(idea: Idea) {
+  openDeleteModal(idea: Idea) {
     if (idea.status !== 'Rejected' && idea.status !== 'UnderReview') {
-      alert(
-        'You can only delete ideas that are in Rejected or Under Review status.',
+      this.showToast(
+        'Only ideas Under Review or Rejected can be deleted.',
+        'error',
       );
       return;
     }
 
-    if (
-      !confirm(
-        `Are you sure you want to delete "${idea.title}"? This action cannot be undone.`,
-      )
-    ) {
-      return;
-    }
+    this.pendingDelete = idea;
+    this.deleteError = '';
+    this.showDeleteModal = true;
+  }
 
-    this.ideaService.deleteIdea(idea.ideaID).subscribe({
+  closeDeleteModal() {
+    if (this.isDeleting) return;
+    this.showDeleteModal = false;
+    this.pendingDelete = null;
+    this.deleteError = '';
+  }
+
+  confirmDelete() {
+    if (!this.pendingDelete) return;
+
+    this.isDeleting = true;
+    this.deleteError = '';
+
+    this.ideaService.deleteIdea(this.pendingDelete.ideaID).subscribe({
       next: () => {
-        console.log('Idea deleted successfully');
-        // Remove idea from list
-        this.ideas = this.ideas.filter((i) => i.ideaID !== idea.ideaID);
-        // Close detail panel if it was the selected idea
-        if (this.selected?.ideaID === idea.ideaID) {
+        const deletedId = this.pendingDelete?.ideaID;
+        this.ideas = this.ideas.filter((i) => i.ideaID !== deletedId);
+        if (this.selected?.ideaID === deletedId) {
           this.selected = null;
         }
-        alert('Idea deleted successfully');
+        this.showToast('Idea deleted successfully!', 'success');
+        this.isDeleting = false;
+        this.closeDeleteModal();
       },
       error: (error: any) => {
         console.error('Error deleting idea:', error);
@@ -254,9 +275,20 @@ export class MyIdeas implements OnInit {
           error?.error ||
           error?.message ||
           'Failed to delete idea. Please try again.';
-        alert(errorMsg);
+        this.deleteError = errorMsg;
+        this.showToast(errorMsg, 'error');
+        this.isDeleting = false;
       },
     });
+  }
+
+  private showToast(message: string, type: 'success' | 'error' | 'info') {
+    this.toastMessage = message;
+    this.toastType = type;
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
+      this.toastMessage = '';
+    }, 2200);
   }
 
   addComment() {

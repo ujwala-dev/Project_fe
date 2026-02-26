@@ -43,8 +43,9 @@ export class DecisionComponent implements OnInit {
   showStatusConfirm = false;
   pendingStatus: 'UnderReview' | 'Approved' | null = null;
   toastMessage = '';
-  toastType: 'success' | 'error' = 'success';
+  toastType: 'success' | 'error' | 'info' = 'success';
   toastTimer: any;
+  toastOffset = 72;
 
   get filteredIdeas(): Idea[] {
     if (this.filterStatus === 'All') {
@@ -395,7 +396,10 @@ export class DecisionComponent implements OnInit {
     }, 3000);
   }
 
-  private showToast(message: string, type: 'success' | 'error'): void {
+  private showToast(
+    message: string,
+    type: 'success' | 'error' | 'info',
+  ): void {
     this.toastMessage = message;
     this.toastType = type;
     if (this.toastTimer) {

@@ -1,43 +1,77 @@
-<div class="p-6">
-  <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-    <h3 class="text-xl font-semibold text-gray-900 m-0">{{ category ? 'Edit Category' : 'Add New Category' }}</h3>
-    <button
-      class="bg-transparent border-none text-2xl text-gray-500 cursor-pointer p-0 w-8 h-8 flex items-center justify-center rounded-sm transition-all duration-200 hover:bg-gray-100 hover:text-gray-900"
-      (click)="onCancel()" type="button">×</button>
+<div class="category-form-shell">
+  <div
+    *ngIf="toastMessage"
+    class="app-toast"
+    [ngClass]="[
+      'show',
+      toastType === 'success'
+        ? 'app-toast--success'
+        : toastType === 'info'
+        ? 'app-toast--info'
+        : 'app-toast--error'
+    ]"
+    [style.top.px]="toastOffset"
+  >
+    {{ toastMessage }}
   </div>
 
-  <form (ngSubmit)="onSubmit()">
-    <div class="mb-5">
-      <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Category Name *</label>
-      <input type="text" id="name" [(ngModel)]="formData.name" name="name" placeholder="e.g., Process Improvement"
-        class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md text-sm transition-all duration-200 focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500 focus:ring-opacity-10"
-        required />
-    </div>
-
-    <div class="mb-5">
-      <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-      <textarea id="description" [(ngModel)]="formData.description" name="description" rows="3"
-        placeholder="Describe this category..."
-        class="w-full px-2.5 py-1.5 border border-gray-300 rounded-md text-sm transition-all duration-200 focus:outline-none focus:border-blue-500 focus:ring-3 focus:ring-blue-500 focus:ring-opacity-10"></textarea>
-    </div>
-
-    <div class="mb-5">
-      <label class="flex items-center gap-2 cursor-pointer select-none">
-        <input type="checkbox" [(ngModel)]="formData.isActive" name="isActive" class="w-4 h-4 cursor-pointer" />
-        <span class="text-sm text-gray-700">Active (visible in dropdowns)</span>
-      </label>
-    </div>
-
-    <div class="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
-      <button type="button"
-        class="px-5 py-2.5 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-sm bg-gray-100 text-gray-700 hover:bg-gray-200"
-        (click)="onCancel()">
-        Cancel
-      </button>
-      <button type="submit"
-        class="px-5 py-2.5 border-none rounded-md font-medium cursor-pointer transition-all duration-200 text-sm bg-blue-500 text-white hover:bg-blue-600">
-        {{ category ? 'Update' : 'Create' }} Category
+  <div class="form-card">
+    <div class="form-card__header">
+      <div>
+        <p class="form-eyebrow">Category</p>
+        <h3 class="form-title">{{ category ? 'Edit Category' : 'Add New Category' }}</h3>
+        <p class="form-subtitle">Keep your category names clear and easy to scan.</p>
+      </div>
+      <button class="icon-btn" type="button" (click)="onCancel()" aria-label="Close">
+        ×
       </button>
     </div>
-  </form>
+
+    <form (ngSubmit)="onSubmit()" class="form-grid">
+      <div class="field">
+        <label for="name" class="field__label">Category Name *</label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          [(ngModel)]="formData.name"
+          placeholder="e.g., Process Improvement"
+          class="field__control"
+          required
+        />
+      </div>
+
+      <div class="field">
+        <label for="description" class="field__label">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          rows="3"
+          [(ngModel)]="formData.description"
+          placeholder="Describe this category..."
+          class="field__control field__control--textarea"
+        ></textarea>
+      </div>
+
+      <div class="field field--inline">
+        <label class="switch">
+          <input type="checkbox" [(ngModel)]="formData.isActive" name="isActive" />
+          <span class="switch__slider"></span>
+        </label>
+        <div class="switch__text">
+          <span class="switch__title">Active</span>
+          <span class="switch__hint">Visible in dropdowns</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn btn--ghost" (click)="onCancel()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn--primary">
+          {{ category ? 'Update' : 'Create' }} Category
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
