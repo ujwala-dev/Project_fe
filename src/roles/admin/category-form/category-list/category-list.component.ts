@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { CategoryFormComponent } from '../category-form.component';
 import { Category } from '../../../../models/model';
 import { CategoryService } from '../../../../services/category.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-category-list',
@@ -24,7 +25,7 @@ export class CategoryListComponent implements OnInit {
   categoryToDelete: Category | null = null;
   isDeleting = false;
 
-  constructor(private categoryService: CategoryService) {}
+  constructor(private categoryService: CategoryService, private router: Router) {}
 
   ngOnInit(): void {
     this.categoryService.getAllCategories().subscribe((categories) => {
@@ -89,7 +90,10 @@ export class CategoryListComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error deleting category:', error);
-        this.showToast('Failed to delete category. Please try again.', 'error');
+        this.isDeleting = false;
+        this.cancelDelete();
+        this.showToast('Cannot delete this category because it has linked ideas.', 'error');
+        this.router.navigate(['/admin/categories']);
       },
       complete: () => {
         this.isDeleting = false;

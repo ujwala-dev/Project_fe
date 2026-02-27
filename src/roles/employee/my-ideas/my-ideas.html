@@ -175,7 +175,8 @@
               title="View upvoters"
               *ngIf="getVotersForIdea(idea.ideaID).upvoters.length > 0 && selected?.ideaID === idea.ideaID"
             >
-              <span class="text-lg">👍</span>
+              <img src="/Like.svg" alt="Upvote" class="w-5 h-5 select-none opacity-60" />
+              
               <span class="font-bold">{{ idea.upvotes || 0 }}</span>
             </button>
 
@@ -184,7 +185,8 @@
               disabled
               class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-400 border border-gray-200 cursor-not-allowed shadow-sm"
             >
-              <span class="text-lg opacity-60">👍</span>
+              <img src="/Like.svg" alt="Upvote" class="w-5 h-5 select-none opacity-60" />
+              
               <span class="font-bold">{{ idea.upvotes || 0 }}</span>
             </button>
 
@@ -194,7 +196,8 @@
               title="View downvoters"
               *ngIf="getVotersForIdea(idea.ideaID).downvoters.length > 0 && selected?.ideaID === idea.ideaID"
             >
-              <span class="text-lg">👎</span>
+              <img src="/disLike.svg" alt="Downvote" class="w-5 h-5 select-none opacity-60" />
+              
               <span class="font-bold">{{ idea.downvotes || 0 }}</span>
             </button>
 
@@ -203,7 +206,8 @@
               disabled
               class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-50 text-gray-400 border border-gray-200 cursor-not-allowed shadow-sm"
             >
-              <span class="text-lg opacity-60">👎</span>
+              <img src="/disLike.svg" alt="Downvote" class="w-5 h-5 select-none opacity-60" />
+              
               <span class="font-bold">{{ idea.downvotes || 0 }}</span>
             </button>
 

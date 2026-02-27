@@ -45,6 +45,11 @@ export class CategoryFormComponent implements OnInit {
       return;
     }
 
+    if (!this.formData.description.trim()) {
+      this.showToast('Description is required', 'error');
+      return;
+    }
+
     if (this.category) {
       // Update existing category
       this.categoryService

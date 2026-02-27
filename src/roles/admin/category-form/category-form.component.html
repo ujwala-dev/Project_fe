@@ -1,4 +1,4 @@
-<div class="category-form-shell">
+<div class="relative">
   <div
     *ngIf="toastMessage"
     class="app-toast"
@@ -15,60 +15,80 @@
     {{ toastMessage }}
   </div>
 
-  <div class="form-card">
-    <div class="form-card__header">
-      <div>
-        <p class="form-eyebrow">Category</p>
-        <h3 class="form-title">{{ category ? 'Edit Category' : 'Add New Category' }}</h3>
-        <p class="form-subtitle">Keep your category names clear and easy to scan.</p>
+  <div class="relative overflow-hidden rounded-2xl border border-(--blue-100) bg-white/95 shadow-2xl backdrop-blur">
+    <div class="absolute inset-x-0 top-0 h-1.5 bg-linear-to-r from-(--blue-400) via-(--blue-500) to-(--blue-600)"></div>
+    <div class="flex items-start justify-between gap-4 px-6 pt-6 pb-4 sm:px-7">
+      <div class="space-y-1">
+        <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-(--blue-500)">Category</p>
+        <h3 class="text-2xl font-black text-slate-900">{{ category ? 'Edit Category' : 'Add New Category' }}</h3>
+        <p class="text-sm text-slate-500">Keep names concise and clear so teams pick the right bucket.</p>
       </div>
-      <button class="icon-btn" type="button" (click)="onCancel()" aria-label="Close">
+      <button
+        type="button"
+        (click)="onCancel()"
+        class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:text-slate-700 hover:border-slate-300 shadow-sm transition"
+        aria-label="Close"
+      >
         ×
       </button>
     </div>
 
-    <form (ngSubmit)="onSubmit()" class="form-grid">
-      <div class="field">
-        <label for="name" class="field__label">Category Name *</label>
+    <form (ngSubmit)="onSubmit()" class="px-6 pb-6 sm:px-7 sm:pb-7 space-y-5">
+      <div class="space-y-2">
+        <label for="name" class="text-sm font-semibold text-slate-700">Category Name *</label>
         <input
           id="name"
           name="name"
           type="text"
           [(ngModel)]="formData.name"
           placeholder="e.g., Process Improvement"
-          class="field__control"
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-(--blue-400) focus:ring-2 focus:ring-(--blue-100)"
           required
         />
       </div>
 
-      <div class="field">
-        <label for="description" class="field__label">Description</label>
+      <div class="space-y-2">
+        <label for="description" class="text-sm font-semibold text-slate-700">Description</label>
         <textarea
           id="description"
           name="description"
           rows="3"
           [(ngModel)]="formData.description"
-          placeholder="Describe this category..."
-          class="field__control field__control--textarea"
+          placeholder="Describe what belongs here..."
+          class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-(--blue-400) focus:ring-2 focus:ring-(--blue-100)"
         ></textarea>
       </div>
 
-      <div class="field field--inline">
-        <label class="switch">
-          <input type="checkbox" [(ngModel)]="formData.isActive" name="isActive" />
-          <span class="switch__slider"></span>
-        </label>
-        <div class="switch__text">
-          <span class="switch__title">Active</span>
-          <span class="switch__hint">Visible in dropdowns</span>
+      <label class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          [(ngModel)]="formData.isActive"
+          name="isActive"
+          class="peer sr-only"
+        />
+        <span class="relative h-6 w-11 rounded-full bg-slate-300 transition peer-checked:bg-(--blue-500)">
+          <span
+            class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow-sm transition peer-checked:translate-x-5"
+          ></span>
+        </span>
+        <div>
+          <p class="text-sm font-semibold text-slate-900">Active</p>
+          <p class="text-xs text-slate-500">Controls visibility in dropdowns.</p>
         </div>
-      </div>
+      </label>
 
-      <div class="actions">
-        <button type="button" class="btn btn--ghost" (click)="onCancel()">
+      <div class="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          (click)="onCancel()"
+          class="inline-flex justify-center rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+        >
           Cancel
         </button>
-        <button type="submit" class="btn btn--primary">
+        <button
+          type="submit"
+          class="inline-flex justify-center rounded-xl bg-linear-to-r from-[#2563eb] via-[#3b82f6] to-[#0ea5e9] px-5 py-2.5 text-sm font-bold text-white shadow-md transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-(--blue-300)"
+        >
           {{ category ? 'Update' : 'Create' }} Category
         </button>
       </div>
